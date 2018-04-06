@@ -1,0 +1,69 @@
+[Global]
+CurrentProject=demo_0206.vpj
+[ProjectDates]
+demo_0206.vpj=20180212083002546
+[ActiveConfig]
+demo_0206.vpj=Release
+[TreeExpansion2]
+- demo_0206.vpj
+  - Source Files
+  - Header Files
+  + Resource Files
+  + Bitmaps
+  + Other Files
+scroll:3
+[State]
+SCREEN: 1440 900 -228 1 930 867 0 0 M 0 0 0 0 1185 545
+CWD: ..\demoLQ_5644A_LED
+BUFFER: BN="src\main.c"
+BI: MA=1 74 1  TABS=1 5  WWS=1 IWT=1 ST=0 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C	HM=0 MF=8 TL=0 MLL=0 ASE=0 LNL=6 LCF=2 CAPS=0 E=0 ESBU2=-1
+VIEW: LN=.12009 CL=32 LE=0 CX=31 CY=14 WI=5 BI=4 HT=0 HN=0 HF=0 HC=4
+BUFFER: BN="src\etpu_fuelenable_auto.h"
+BI: MA=1 74 1  TABS=1 5  WWS=1 IWT=1 ST=0 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C	HM=0 MF=8 TL=0 MLL=0 ASE=0 LNL=6 LCF=2 CAPS=0 E=0 ESBU2=-1
+VIEW: LN=.0 CL=1 LE=0 CX=0 CY=0 WI=5 BI=7 HT=0 HN=0 HF=0 HC=4
+BUFFER: BN="src\etpu_start.h"
+BI: MA=1 74 1  TABS=1 5  WWS=1 IWT=1 ST=0 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C	HM=0 MF=872 TL=0 MLL=0 ASE=0 LNL=6 LCF=2 CAPS=0 E=0 ESBU2=-1
+VIEW: LN=.5834 CL=66 LE=0 CX=65 CY=20 WI=5 BI=6 HT=0 HN=0 HF=0 HC=4
+BUFFER: BN="src\etpu_start.c"
+BI: MA=1 74 1  TABS=1 5  WWS=1 IWT=1 ST=0 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C	HM=0 MF=872 TL=0 MLL=0 ASE=0 LNL=6 LCF=2 CAPS=0 E=0 ESBU2=-1
+VIEW: LN=.18343 CL=58 LE=0 CX=57 CY=23 WI=5 BI=8 HT=0 HN=0 HF=0 HC=4
+BUFFER: BN="src\etpu_eng_pos.c"
+BI: MA=1 74 1  TABS=1 5  WWS=1 IWT=1 ST=0 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C	HM=0 MF=8 TL=0 MLL=0 ASE=0 LNL=6 LCF=2 CAPS=0 E=0 ESBU2=-1
+VIEW: LN=.6566 CL=41 LE=0 CX=40 CY=14 WI=5 BI=9 HT=0 HN=0 HF=0 HC=4
+BUFFER: BN="src\etpu_fuel.c"
+BI: MA=1 74 1  TABS=1 5  WWS=1 IWT=1 ST=0 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C	HM=0 MF=8 TL=0 MLL=0 ASE=0 LNL=6 LCF=2 CAPS=0 E=0 ESBU2=-1
+VIEW: LN=.8600 CL=2 LE=0 CX=1 CY=17 WI=5 BI=10 HT=0 HN=0 HF=0 HC=4
+BUFFER: BN="src\eTPUChCfg.c"
+BI: MA=1 74 1  TABS=1 5  WWS=1 IWT=1 ST=0 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C	HM=0 MF=872 TL=0 MLL=0 ASE=0 LNL=6 LCF=2 CAPS=0 E=0 ESBU2=-1
+VIEW: LN=.4712 CL=76 LE=0 CX=75 CY=17 WI=5 BI=11 HT=0 HN=0 HF=0 HC=4
+WINDOW: 66 66 1009 369 -1 -1 N  WF=0 WT=4 "Default Fixed Font,10,0,1"
+BUFFER: BN="src\main.c"
+VIEW: LN=.12009 CL=32 LE=0 CX=38 CY=14 WI=13 BI=4 HT=0 HN=0 HF=0 HC=4
+WINDOW: 154 154 1009 369 -1 -1 N  WF=0 WT=8 "Default Fixed Font,10,0,1"
+BUFFER: BN="src\etpu_fuelenable_auto.h"
+VIEW: LN=.0 CL=1 LE=0 CX=7 CY=0 WI=15 BI=7 HT=0 HN=0 HF=0 HC=4
+WINDOW: 22 22 1009 369 -1 -1 N  WF=0 WT=2 "Default Fixed Font,10,0,1"
+BUFFER: BN="src\etpu_eng_pos.c"
+VIEW: LN=.6566 CL=41 LE=0 CX=47 CY=14 WI=17 BI=9 HT=0 HN=0 HF=0 HC=4
+WINDOW: 110 110 1009 369 -1 -1 N  WF=0 WT=7 "Default Fixed Font,10,0,1"
+BUFFER: BN="src\etpu_fuel.c"
+VIEW: LN=.8600 CL=2 LE=0 CX=8 CY=17 WI=18 BI=10 HT=0 HN=0 HF=0 HC=4
+WINDOW: 110 110 1009 369 -1 -1 N  WF=0 WT=6 "Default Fixed Font,10,0,1"
+BUFFER: BN="src\eTPUChCfg.c"
+VIEW: LN=.4712 CL=76 LE=0 CX=82 CY=17 WI=19 BI=11 HT=0 HN=0 HF=0 HC=4
+WINDOW: 44 44 1009 369 -1 -1 N  WF=0 WT=3 "Default Fixed Font,10,0,1"
+BUFFER: BN="src\etpu_start.h"
+VIEW: LN=.5834 CL=66 LE=0 CX=72 CY=20 WI=14 BI=6 HT=0 HN=0 HF=0 HC=4
+WINDOW: 88 88 1009 369 -1 -1 M  WF=0 WT=5 "Default Fixed Font,10,0,1"
+BUFFER: BN="src\etpu_start.c"
+VIEW: LN=.18311 CL=6 LE=0 CX=14 CY=20 WI=16 BI=8 HT=0 HN=0 HF=0 HC=4
+FILEHIST: 9
+src\main.c
+src\etpu_start.h
+src\etpu_fuelenable_auto.h
+src\etpu_eng_pos.c
+src\etpu_util.c
+src\etpu_fuel.c
+src\etpu_pwm.c
+src\etpu_toothgen.c
+src\etpu_start.c

@@ -1,0 +1,2214 @@
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  1
+
+
+                                        /*******************************************************************************
+                                         * 版权 2015-2016 中国航空工业集团第六三一所第十八研究室
+                                         *
+                                         * 对本文件的拷贝、发布、修改或者其他任何用途必须得到中国航空工业集团第六三一所
+                                         * 的书面协议许可。
+                                         *
+                                         * Copyrights (2015-2016) ACTRI
+                                         * All Right Reserved
+                                         *******************************************************************************
+
+                                         *******************************************************************************
+                                         * Revision History
+                                         *------------------------------------------------------------------------------
+                                         * 2017-12-07, gbo, created
+                                         *******************************************************************************
+
+                                         *******************************************************************************
+                                         * content
+                                         *------------------------------------------------------------------------------
+                                         *  File            : etpuc_crank.c
+                                         *  Description     : ETPU曲轴信号采集，同步
+                                         *  Call            : 029-89186510
+                                         ******************************************************************************/
+                                        #include "etpuc_fuel2.h"
+                                        /*******************************************************************************
+                                         * 版权 2015-2016 中国航空工业集团第六三一所第十八研究室
+                                         *
+                                         * 对本文件的拷贝、发布、修改或者其他任何用途必须得到中国航空工业集团第六三一所
+                                         * 的书面协议许可。
+                                         *
+                                         * Copyrights (2015-2016) ACTRI
+                                         * All Right Reserved
+                                         *******************************************************************************
+
+                                         *******************************************************************************
+                                         * Revision History
+                                         *------------------------------------------------------------------------------
+                                         * 2017-12-07, gbo, created
+                                         *******************************************************************************
+
+                                         *******************************************************************************
+                                         * content
+                                         *------------------------------------------------------------------------------
+                                         *  File            : etpuc_crank.h
+                                         *  Description     : ETPU曲轴检测头文件
+                                         *  Call            : 029-89186510
+                                         ******************************************************************************/
+                                        #ifndef _ETPUC_FUEL_H
+0007                                    #define _ETPUC_FUEL_H
+
+                                        #include <eTPUc_common.h>
+                                        #ifndef __ETPUC_COMMON_H
+0008                                    #define __ETPUC_COMMON_H
+
+                                        /********************************************************************************
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  2
+
+
+
+                                         FILE NAME: etpuc_common.h
+
+                                         COPYRIGHT (c) ASH WARE, Byte Craft Limited, Freescale 2002-2004.
+                                         All Rights Reserved.
+
+                                         VERSION:  1.0
+
+                                         This file is maintained as part of the support for the eTPU_C
+                                         development tools by Byte Craft Limited.
+
+                                         This code may be adapted for any purpose when used with the eTPU_C
+                                         Code Development System.  No warranty is implied or given as to their
+                                         usability for any purpose.
+
+                                         Portions of this file are governed by the following copyrights and
+                                         terms:
+
+                                         (c) Freescale 2002-2004 FREESCALE, INC. All Rights Reserved.
+                                         *  You are hereby granted a copyright license to use, modify, and
+                                         *  distribute the SOFTWARE so long as this entire notice is
+                                         *  retained without alteration in any modified and/or redistributed
+                                         *  versions, and that such modified versions are clearly identified
+                                         *  as such. No licenses are granted by implication, estoppel or
+                                         *  otherwise under any patents or trademarks of Freescale, Inc. This
+                                         *  software is provided on an "AS IS" basis and without warranty.
+                                         *
+                                         *  To the maximum extent permitted by applicable law, FREESCALE
+                                         *  DISCLAIMS ALL WARRANTIES WHETHER EXPRESS OR IMPLIED, INCLUDING
+                                         *  IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+                                         *  PURPOSE AND ANY WARRANTY AGAINST INFRINGEMENT WITH REGARD TO THE
+                                         *  SOFTWARE (INCLUDING ANY MODIFIED VERSIONS THEREOF) AND ANY
+                                         *  ACCOMPANYING WRITTEN MATERIALS.
+                                         *
+                                         *  To the maximum extent permitted by applicable law, IN NO EVENT
+                                         *  SHALL FREESCALE BE LIABLE FOR ANY DAMAGES WHATSOEVER (INCLUDING
+                                         *  WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS
+                                         *  INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR OTHER PECUNIARY
+                                         *  LOSS) ARISING OF THE USE OR INABILITY TO USE THE SOFTWARE.
+                                         *
+                                         *  Freescale assumes no responsibility for the maintenance and support
+                                         *  of this software
+
+                                         (c) Copyright 2002-2004 Byte Craft Limited
+                                         421 King St.N., Waterloo, ON, Canada, N2J 4E4
+                                         VOICE: 1 (519) 888 6911
+                                         email: support@bytecraft.com
+
+                                         (c) Copyright 2002-2004 ASH WARE
+
+                                        ================================================================================
+
+                                        DESCRIPTION: This file defines the application-friendly macros,
+                                        functions for common tasks like channel set up and register control
+                                        field access.
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  3
+
+
+
+                                        ================================================================================
+
+                                        SOURCES:
+
+                                        etpuc_common.h is based on the following header files commonly used by
+                                        the eTPU development community:
+
+                                        AshWareETpu.h - developed by Andy Klumpp from ASH WARE
+                                        Mike.h - developed by Mike Pauwels from Freescale
+                                        etpu_common.h - developped by Ming Li from Freescale
+
+                                        Jeff Loeliger from Freescale and Walter Banks from Byte Craft
+                                        also made significant contibutions.
+
+                                        ================================================================================
+                                         UPDATE HISTORY
+                                         REV      AUTHOR        DATE                DESCRIPTION OF CHANGE
+                                         ---      -------      --------    ---------------------
+                                         0.0      Ming Li      10/30/03    Initial creation
+                                         0.1      Ming Li      11/12/03    Updated to incorporate comments from eTPU
+                                                                           development community.
+                                         0.2      Walter Banks 15 Dec 03   Made changes to be reflect definitions in
+                                                                           eTPUc.h
+                                                                           Corrected IsTransALatched()
+                                                                                     IsTransBLatched()
+                                                                           Added missing definitions
+                                                                                     set_pin_per_opacA
+                                                                                     set_pin_per_opacB
+                                                                                     force_pin_high
+                                                                                     force_pin_low
+                                                                           Corrected opac1 to opacA
+                                                                                     opac2 to opacB
+
+                                         0.3      Walter Banks  5 Jan 04   Corrected opacB = pin_action; to
+                                                                               opacA = pin_action;
+
+                                         0.4     J. Loeliger    21/Jan/04  Cleared up reorganized and added more:
+                                                                           -Moved TRUE & FALSE to top and added
+                                                                              conditional
+                                                                           -Moved entry conditions up and added macros
+                                                                              for all conditions
+                                                                           -Merged with AshWareETpu.h
+                                                                              -Removed commet with of PDCM names.
+                                                                           -Grouped latches and flags together.
+                                                                             -added new set and clear for latches and
+                                                                                flags
+                                                                           -Merged output pin value to 1 set rather
+                                                                              than 2
+                                                                           -Added long channel mode names.
+                                                                           -Added SetupMatch_AB for better
+                                                                              optimization
+                                                                           -Added match only conditions for output
+                                                                              functions.
+                                                                           -Added new ActionUnintA/B macros
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  4
+
+
+                                                                           -Added new Pin macro
+                                                                           -And more.
+                                         0.5     J. Loeliger     12/Feb/04 -Changed DetectTrans to OnTrans.
+                                         0.6     J. Loeliger     30/Mar/04 -Added SetupMatchB and fixed some old
+                                                                             references to 1 & 2 -> A & B
+                                         0.7     J. Loeliger     16/Apr/04 -Changed Disable match (MRLE) to =0
+                                         0.8     J. Loeliger     27/Apr/04 -Fixed Disable/Enable match in thread,
+                                                                              they were swapped.
+                                         0.9     J. Loeliger     10/May/04 -Added support for OBE with new
+                                                 M. Brejl                   EnableOutputBuffer()/DisableOutputBuffer()
+                                                                            Removed all // comments. Changed Motorola
+                                                                            to Freescale.
+                                                                            Fixed spelling mistake in GetCurentChanNum
+
+                                         0.4     Karen McMurray  19 May 04  Changed all ertA to erta
+                                                                                        ertB to ertb.
+
+                                         1.0     Kirk Zurell     11 Aug 04  Integrated etpuc_common.h from J. Loeliger
+                                                                            and etpuc_common.h from Byte Craft Limited.
+                                                                            Removed tabs & made comments more sustainable.
+                                                                            Conditionalized some definitions to be more
+                                                                            economical on symbols.
+
+                                                                            Divider lines have 80 asterices.
+
+                                        */
+
+
+
+                                        /********************************************************************************/
+
+                                        /* This file depends upon definitions from etpuc.h */
+
+                                        #ifndef __ETPUC_H
+                                        #include <etpuc.h>
+                                        #ifndef __ETPUC_H
+0009                                    #define __ETPUC_H
+
+                                        /*
+                                         *  eTPU C Code Development System
+                                         *
+                                         *  Processor register definitions
+                                         *  for the eTPU C Code Development System.
+                                         *
+                                         *  This code may be adapted for any purpose
+                                         *  when used with the eTPU C Code Development
+                                         *  System.  No warranty is implied or given
+                                         *  as to their usability for any purpose.
+                                         *
+                                         *  (c) Copyright 2002-2004 Byte Craft Limited
+                                         *  421 King St.N., Waterloo, ON, Canada, N2J 4E4
+                                         *  VOICE: 1 (519) 888 6911
+                                         *  FAX  : 1 (519) 746 6751
+                                         *  email: support@bytecraft.com
+                                         *
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  5
+
+
+                                         *  Byte Craft Limited
+                                         *  Waterloo, Ontario
+                                         *  Canada N2J 4E4
+                                         *  (519) 888-6911
+                                         *
+                                         *  Walter Banks
+                                         *
+                                         * Revision history
+                                         * ----------------
+                                         * V0.90  WB    Nov 2003  First pre-release of etpuc.h based on V1.10 etpu.h with
+                                         *                        changes to reflect eTPU naming conventions
+                                         * V1.00  WB    Nov 2003  First release changes to the channel fields to reflect
+                                         *                        naming conventions for eTPU
+                                         * V1.01  WB    Dec 2003  Corrected definitions of pin_opacA and pin_opacB
+                                         *
+                                         *
+                                         *
+                                         *  All of the eTPU registers can be directly accessed from C
+                                         *
+
+                                             register_ac        ac   ;      // 24 bits
+                                             register_b         b    ;      // 24 bits
+                                             register_c         c    ;      // 24 bits
+                                             register_d         d    ;      // 24 bits
+                                             register_chan      chan ;      //  5 bits
+                                             register_diob      diob ;      // 24 bits
+                                             register_erta      erta ;      // 24 bits
+                                             register_ertb      ertb ;      // 24 bits
+                                             register_link      link ;      //  8 bits
+                                             register_mach      mach ;      // 24 bits
+                                             register_macl      macl ;      // 24 bits
+                                             register_p         p    ;      // 24 bits
+                                             register_rar       rar  ;      // 14 bits
+                                             register_sr        sr   ;      // 24 bits
+                                             register_tcr1      tcr1 ;      // 24 bits
+                                             register_tcr2      tcr2 ;      // 24 bits
+                                             register_tpr       tpr  ;      // 16 bits
+                                             register_trr       trr  ;      // 24 bits
+                                             register_chan_base chan_base;  // 24 bits
+                                        */
+
+                                        /* The following registers are defined for
+                                           eTPU C application code */
+
+0000                                         register_chan       chan ;       //  5 bits
+0000                                         register_erta       erta ;       // 24 bits
+0000                                         register_ertb       ertb ;       // 24 bits
+0000                                         register_tcr1       tcr1 ;       // 24 bits
+0000                                         register_tcr2       tcr2 ;       // 24 bits
+0000                                         register_tpr        tpr  ;       // 16 bits
+0000                                         register_trr        trr  ;       // 24 bits
+0000                                         register_chan_base  chan_base;   // 24 bits
+0000                                         register_link       link;        // 8 bits
+
+                                        /*
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  6
+
+
+                                           The link request can be set by copying the
+                                           channel number into the link register. The
+                                           following definition does this.
+                                         */
+
+000A                                    #define link_request(channel) link = channel
+
+                                        /*
+                                         *
+                                         *
+                                         *  All of the eTPU channel fields are predefined as a
+                                         *  large C structure (chan_struct) by the eTPU C compiler.
+                                         *
+                                         *  struct chan {
+                                         *               CIRC   int : 2 ;
+                                         *               ERWA   int : 1 ;
+                                         *               ERWB   int : 1 ;
+                                         *               FLC    int : 3 ;
+                                         *               IPACA  int : 3 ;
+                                         *               IPACB  int : 3 ;
+                                         *               LSR    int : 1 ;  // w test
+                                         *               MRLA   int : 1 ;  // w test
+                                         *               MRLB   int : 1 ;  // w test
+                                         *               MRLE   int : 1 ;
+                                         *               MTD    int : 2 ;
+                                         *               OPACA  int : 3 ;
+                                         *               OPACB  int : 3 ;
+                                         *               PDCM   int : 4 ;
+                                         *               PIN    int : 3 ;
+                                         *               TBSA   int : 4 ;
+                                         *               TBSB   int : 4 ;
+                                         *               TDL    int : 1 ;
+                                         *               SMPR   int : 2 ;
+                                         * State Resolution
+                                         *               FLAG0  int : 1 ;  // w only also defined in FLC
+                                         *               FLAG1  int : 1 ;
+                                         * Channel Flags
+                                         *               FM0    int : 1 ;
+                                         *               FM1    int : 1 ;
+                                         *         //    LSR    int : 1 ;  // also channel fields
+                                         *         //    MRLA   int : 1 ;  // also channel fields
+                                         *         //    MRLB   int : 1 ;  // also channel fields
+                                         *               PSS    int : 1 ;
+                                         *               PSTI   int : 1 ;
+                                         *               PSTO   int : 1 ;
+                                         *               TDLA   int : 1 ;
+                                         *               TDLB   int : 1 ;
+                                         *              }
+                                         ***/
+
+0000                                    chan_struct channel;
+0000                                    register_cc        CC;
+
+000B                                    #define erwA       channel.ERWA
+000C                                    #define erwB       channel.ERWB
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  7
+
+
+
+000D                                    #define flc        channel.FLC
+000E                                    #define ipacA      channel.IPACA
+000F                                    #define ipacB      channel.IPACB
+0010                                    #define lsr        channel.LSR
+
+0011                                    #define mrlA       channel.MRLA
+0012                                    #define mrlB       channel.MRLB
+0013                                    #define mrle       channel.MRLE
+0014                                    #define mtd        channel.MTD
+0015                                    #define opacA      channel.OPACA
+0016                                    #define opacB      channel.OPACB
+0017                                    #define pdcm       channel.PDCM
+0018                                    #define pin        channel.PIN
+0019                                    #define act_unitA  channel.TBSA
+001A                                    #define act_unitB  channel.TBSB
+001B                                    #define tdl        channel.TDL
+001C                                    #define flag0      channel.FLAG0
+001D                                    #define flag1      channel.FLAG1
+001E                                    #define fm0        channel.FM0
+001F                                    #define fm1        channel.FM1
+0020                                    #define pss        channel.PSS
+0021                                    #define psti       channel.PSTI
+0022                                    #define psto       channel.PSTO
+0023                                    #define tdlA       channel.TDLA
+0024                                    #define tdlB       channel.TDLB
+
+
+                                        // IPAC 1,2
+00000000                                #define no_detect                 0
+00000001                                #define low_high                  1
+00000002                                #define high_low                  2
+00000003                                #define any_trans                 3
+00000004                                #define detect_input_0_on_match   4
+00000005                                #define detect_input_1_on_match   5
+00000007                                #define no_change_ipac            7
+
+                                        // OPAC 1,2  fields
+
+00000000                                #define match_no_change   0
+00000001                                #define match_high        1
+00000002                                #define match_low         2
+00000003                                #define match_toggle      3
+00000001                                #define opac_high         1
+00000002                                #define opac_low          2
+00000003                                #define toggle            3
+00000004                                #define opac_high_low     4
+00000005                                #define opac_low_high     5
+00000004                                #define transition_low    4
+00000005                                #define transition_high   5
+00000006                                #define transition_toggle 6
+
+                                        // PDCM fields
+00000000                                #define em_b_st  0              //Either Match, Blocking, Single Transition
+00000001                                #define em_b_dt  1              //Either Match, Blocking, Double Transition
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  8
+
+
+00000002                                #define em_nb_st 2              //Either Match, NonBlocking, Single Transition
+00000003                                #define em_nb_dt 3              //Either Match, NonBlocking, Double Transition
+00000004                                #define m2_st    4              //Match2, Single, Transition
+00000005                                #define m2_dt    5              //Match2, Double, Transition
+00000006                                #define bm_st    6              //Both Match, Single Transition
+00000007                                #define bm_dt    7              //Both Match, Double Transition
+00000008                                #define m2_o_st  8              //Match2, Ordered, Single Transition
+00000009                                #define m2_o_dt  9              //Match2, Ordered, Double Transition
+0000000E                                #define sm_st_e  0xE                //Single Match, Single Transition, Enhanced
+0000000C                                #define sm_st    0xC                //Single Match, Single Transition
+0000000D                                #define sm_dt    0xD                //Single Match, Double Transition
+
+                                        // Time Bases Selection for match and capture
+00000000                                #define Mtcr1_Ctcr1_ge       0      //Match tcr1, Capture tcr1, greater than
+00000001                                #define Mtcr2_Ctcr1_ge       1      //Match tcr2, Capture tcr1, greater than
+00000002                                #define Mtcr1_Ctcr2_ge       2      //Match tcr1, Capture tcr2, greater than
+00000003                                #define Mtcr2_Ctcr2_ge       3      //Match tcr2, Capture tcr2, greater than
+00000004                                #define Mtcr1_Ctcr1_eq       4      //Match tcr1, Capture tcr1, equal
+00000005                                #define Mtcr2_Ctcr1_eq       5      //Match tcr2, Capture tcr1, equal
+00000006                                #define Mtcr1_Ctcr2_eq       6      //Match tcr1, Capture tcr2, equal
+00000007                                #define Mtcr2_Ctcr2_eq       7      //Match tcr2, Capture tcr2, equal
+
+00000008                                #define enable_output_buffer  8     // TBSx[3] = 1, TBSx[2:0] = 000
+00000009                                #define disable_output_buffer 9     // TBSx[3] = 1, TBSx[2:0] = 001
+0000000F                                #define do_nothing       15     // TBSx[3] = 1, TBSx[2:0] = 111
+
+                                        // Time Bases Selection for transition and capture
+00000000                                #define Capture_tcr1        0       //TBSx[2] = 0
+00000002                                #define Capture_tcr2        2       //TBSx[2] = 1
+
+                                        // Tooth Program Register structure
+
+                                        struct tpr_struct {
+0000 0A 00                                int TICKS   : 10;
+0001 01 02                                int TPR10   : 1;
+0001 01 03                                int HOLD    : 1;
+0001 01 04                                int IPH     : 1;
+0001 02 05                                int MISSCNT : 2;
+0001 01 07                                int LAST    : 1;
+0000                                      } ;
+
+                                        // pin definitions
+                                        //   pin = pin_high;
+00000000                                #define pin_opacA  0
+00000001                                #define pin_opacB  1
+00000002                                #define pin_high   2
+00000004                                #define pin_low    4
+
+                                        #endif /* __ETPUC_H */
+
+                                        #endif /* __ETPUC_H */
+
+
+                                        /********************************************************************************/
+
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  9
+
+
+                                        /* Constant definitions */
+
+                                        #ifndef TRUE
+00000001                                #define TRUE        1
+                                        #endif
+
+                                        #ifndef FALSE
+00000000                                #define FALSE       0
+                                        #endif
+
+
+                                        /********************************************************************************/
+
+                                        /* State Resolution Flags, and other latches */
+
+                                        /* Clear() definitions */
+0025                                    #define LSRLatch      lsr
+0026                                    #define LatchedMatchA mrlA
+0027                                    #define LatchedMatchB mrlB
+0028                                    #define TransLatch    tdl
+
+                                        /* Macros */
+
+                                        /* Set flag0 or flag1
+                                           Usage: Set(flag0 | flag1);*/
+
+0029                                    #define Set(cond)     (cond = 1)
+
+                                        /* Clear a flag
+                                           Usage: Clear(flag0 | flag1 | LSRLatch | lsr | MatchALatch | mrlA |
+                                                         MatchBLatch | mrlB | TransLatch | tdl);         */
+
+002A                                    #define Clear(cond)   (cond = 0)
+
+                                        /* SYNONYMS */
+                                        /* Flag 0 & flag 1 */
+002B                                    #define ClrFlag0()  (channel.FLAG0 = 0)
+002C                                    #define SetFlag0()  (channel.FLAG0 = 1)
+002D                                    #define ClrFlag1()  (channel.FLAG1 = 0)
+002E                                    #define SetFlag1()  (channel.FLAG1 = 1)
+
+
+002F                                    #define FunctionMode0          channel.FM0
+0030                                    #define IsFunctionMode0()     (channel.FM0==1)
+0031                                    #define IsSampledFuncMode0()  (channel.FM0==1)
+0032                                    #define IsLatchedFuncMode0()  (channel.FM0==1)
+
+0033                                    #define FunctionMode1          channel.FM1
+0034                                    #define IsFunctionMode1()     (channel.FM1==1)
+0035                                    #define IsSampledFuncMode1()  (channel.FM1==1)
+0036                                    #define IsLatchedFuncMode1()  (channel.FM1==1)
+
+
+                                        /********************************************************************************/
+
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 10
+
+
+                                        /* Writing the match registers and enabling/disabling the Match
+                                           Recognition Latch Enable */
+
+0037                                    #define EnableMatchA()                 (channel.ERWA = 0)
+0038                                    #define EnableMatchB()                 (channel.ERWB = 0)
+0039                                    #define DisableMatch()                 (channel.MRLE = 0)
+
+                                        /* SYNONYMS */
+003A                                    #define WriteErtAToMatchAAndEnable()   channel.ERWA = 0
+003B                                    #define WriteErtBToMatchBAndEnable()   channel.ERWB = 0
+003C                                    #define DisableMatchDetection();       channel.MRLE = 0
+
+
+                                        /* Read capture register */
+003D                                    #define GetCapRegA()  (erta)
+003E                                    #define GetCapRegB()  (ertb)
+
+                                        /* Clear Latch */
+003F                                    #define ClearLSRLatch()       (channel.LSR  = 0)
+
+0040                                    #define ClearMatchALatch()    (channel.MRLA = 0)
+0041                                    #define ClearMatchBLatch()    (channel.MRLB = 0)
+
+0042                                    #define ClearTransLatch()     (channel.TDL = 0)
+
+                                        /* SYNONYMS */
+0043                                    #define ClearLinkServiceRequestEvent() (lsr  = 0)
+
+0044                                    #define ClearMatchAEvent()    (channel.MRLA = 0)
+0045                                    #define ClearMatchBEvent()    (channel.MRLB = 0)
+
+0046                                    #define ClearTransitionEvents() (channel.TDL = 0)
+
+
+
+                                        /* Test latch conditions */
+
+0047                                    #define TransitionALatch           channel.TDLA
+0048                                    #define IsTransALatched()         (channel.TDLA==1)
+
+0049                                    #define TransitionBLatch           channel.TDLB
+004A                                    #define IsTransBLatched()         (channel.TDLB==1)
+
+004B                                    #define MatchALatch            channel.MRLA
+004C                                    #define IsMatchALatched()     (channel.MRLA==1)
+
+004D                                    #define MatchBLatch            channel.MRLB
+004E                                    #define IsMatchBLatched()     (channel.MRLB==1)
+
+                                        /* SYNONYMS */
+004F                                    #define IsLatchedTransitionA()    (channel.TDLA==1)
+0050                                    #define IsLatchedTransitionB()    (channel.TDLB==1)
+0051                                    #define IsLatchedMatchA()         (channel.MRLA==1)
+0052                                    #define IsLatchedMatchB()         (channel.MRLB==1)
+
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 11
+
+
+
+
+                                        /********************************************************************************/
+
+                                        /* Enabling/Disabling Event Handling */
+
+0053                                    #define EnableEventHandling()                   (channel.MTD = 0)
+0054                                    #define DisableEventHandling()                  (channel.MTD = 1)
+
+                                        /* SYNONYMS */
+0055                                    #define EnableMatchAndTransitionEventHandling()  channel.MTD = 0
+0056                                    #define DisableMatchAndTransitionEventHandling() channel.MTD = 1
+
+
+                                        /********************************************************************************/
+
+                                        /* Semaphore Operations */
+
+0057                                    #define IsSemaphoreLocked()   (channel.SMPR == 1)
+0058                                    #define LockSemaphore(num)    (channel.SMPR = num)
+0059                                    #define FreeSemaphore()       (channel.SMPR = -1)
+
+
+                                        /********************************************************************************/
+
+                                        /* Exceptions */
+
+                                        /* Channel control macros */
+005A                                    #define SetChannelInterrupt()       (channel.CIRC = 0)
+005B                                    #define SetChannelInterruptRequest()(channel.CIRC = 0)
+
+005C                                    #define SetDataTransferInterrupt()        (channel.CIRC = 1)
+005D                                    #define SetDataTransferInterruptRequest() (channel.CIRC = 1)
+
+005E                                    #define SetGlobalException()  (channel.CIRC = 2)
+
+                                        /* Channel control */
+
+                                        /* Generate the link service request to channel[ChNum] */
+005F                                    #define LinkToChannel(ChNum)            (link = ChNum)
+0060                                    #define LinkTo(num)                 link = num;
+0061                                    #define LinkToEngine1Chan(num)      link = (num | (1<<6))
+0062                                    #define LinkToEngine2Chan(num)      link = (num | (2<<6))
+0063                                    #define LinkToOtherEngineChan(num)  link = (num | (3<<6))
+
+                                        /* switch to specified channel from current channel */
+0064                                    #define SwitchToChannel(ChNum)      (chan = ChNum)
+
+                                        /* return current channel number */
+0065                                    #define GetCurrentChanNum()         (chan)
+
+                                        /* branch condition */
+0066                                    #define LinkServiceRequest     channel.LSR
+0067                                    #define IsLinkReqActive()     (channel.LSR==1)
+0068                                    #define IsSampledLink()       (channel.LSR==1)
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 12
+
+
+0069                                    #define IsLatchedLink()       (channel.LSR==1)
+
+
+                                        /********************************************************************************/
+
+                                        /* Entry Conditions Definition */
+
+                                        /* Usage: use these in the if()/else if()/else structure in an
+                                           ETPU_function */
+
+006A                                    #define HostServiceRequest               hsr
+006B                                    #define IsHostServiceRequestEvent(num)   (hsr==num)
+
+006C                                    #define MatchA_TransB                    (m1==1)
+006D                                    #define matchA_transB                    (m1==1)
+006E                                    #define IsMatchAOrTransitionBEvent()     (m1==1)
+
+006F                                    #define MatchB_TransA                    (m2==1)
+0070                                    #define matchB_transA                    (m2==1)
+0071                                    #define IsMatchBOrTransitionAEvent()     (m2==1)
+
+0072                                    #define linkRequest                      (lsr==1)
+0073                                    #define IsLinkServiceRequestEvent()      (lsr==1)
+
+                                        /* For output-only functions */
+0074                                    #define MatchA                           (m1==1)
+0075                                    #define MatchB                           (m2==1)
+
+
+                                        /********************************************************************************/
+
+                                        /* Predefined Channel Modes (PDCM) */
+
+0076                                    #define SetChannelMode(mode)        (channel.PDCM = mode)
+0077                                    #define channel_setup channel.PDCM
+
+                                        /* Usage:       channel_setup = PDCM_constant
+
+                                        PDCM_constants are taken from etpuc.h:
+                                        em_b_st         Either Match, Blocking, Single Transition
+                                        em_b_dt         Either Match, Blocking, Double Transition
+                                        em_nb_st        Either Match, NonBlocking, Single Transition
+                                        em_nb_dt        Either Match, NonBlocking, Double Transition
+                                        m2_st           Match2, Single, Transition
+                                        m2_dt           Match2, Double, Transition
+                                        bm_st           Both Match, Single Transition
+                                        bm_dt           Both Match, Double Transition
+                                        m2_o_st         Match2, Ordered Single Blocking Transition
+                                        m2_o_dt         Match2, Ordered Double Transition
+                                        sm_st_e         Single Match, Single Transition Enhanced
+                                        sm_st           Single Match, Single Transition
+                                        sm_dt           Single Match, Double Transition
+                                        */
+
+                                        /* SYNONYMS */
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 13
+
+
+0078                                    #define EitherMatchBlockingSingleTransition()     channel.PDCM = em_b_st
+0079                                    #define EitherMatchBlockingDoubleTransition()     channel.PDCM = em_b_dt
+007A                                    #define EitherMatchNonBlockingSingleTransition()  channel.PDCM = em_nb_st
+007B                                    #define EitherMatchNonBlockingDoubleTransition()  channel.PDCM = em_nb_dt
+007C                                    #define Match2SingleTransition()                  channel.PDCM = m2_st
+007D                                    #define Match2DoubleTransition()                  channel.PDCM = m2_dt
+007E                                    #define BothMatchSingleTransition()               channel.PDCM = bm_st
+007F                                    #define BothMatchDoubleTransition()               channel.PDCM = bm_dt
+0080                                    #define Match2OrderedSingleBlockingTransition()   channel.PDCM = m2_o_st
+0081                                    #define Match2OrderedDoubleTransition()           channel.PDCM = m2_o_dt
+0082                                    #define SingleMatchSingleTransitionEnhanced()     channel.PDCM = sm_st_e
+0083                                    #define SingleMatchSingleTransition()             channel.PDCM = sm_st
+0084                                    #define SingleMatchDoubleTransition()             channel.PDCM = sm_dt
+
+
+                                        #define ClearAllLatches()         \
+0085                                            (lsr = 0);(mrlA = 0);(mrlB = 0);(tdl = 0);
+
+
+                                        /********************************************************************************/
+
+                                        /* Complex Macros */
+
+                                        /* These macros should provide the most optimized way of doing things.
+                                           They should be in the best order for optimizing. The compiler might
+                                           be able to identify this code for optimization. */
+
+                                        #define SetupMatchA(reference) \
+                                                erta = reference;      \
+                                                EnableMatchA();        \
+0086                                            ClearMatchALatch();
+
+                                        #define SetupMatchB(reference) \
+                                                ertb = reference;      \
+                                                EnableMatchB();        \
+0087                                            ClearMatchBLatch();
+
+                                        /* These are ONLY useful for init. and if you know which TCR you want
+                                           to use. Latches are cleared at the end so it can be combined with
+                                           other latches. */
+
+                                        #define ConfigMatch_AB() \
+                                                WriteErtAToMatchAAndEnable(); \
+                                                WriteErtBToMatchBAndEnable(); \
+                                                EnableMatchA();        \
+                                                EnableMatchB();        \
+                                                EnableEventHandling();\
+                                                ClearMatchALatch();\
+0088                                            ClearMatchBLatch();
+
+                                        #define SetupMatch_A(reference, timebase_comparator, pin_action) \
+                                                erta = reference; \
+                                                act_unitA = timebase_comparator; \
+                                                opacA = pin_action; \
+                                                EnableMatchA();        \
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 14
+
+
+                                                ClearMatchALatch();\
+0089                                            EnableEventHandling();
+
+                                        #define SetupMatch_B(reference, timebase_comparator, pin_action) \
+                                                ertb = reference; \
+                                                act_unitB = timebase_comparator; \
+                                                opacB = pin_action; \
+                                                EnableMatchB();        \
+                                                ClearMatchBLatch();\
+008A                                            EnableEventHandling();
+
+                                        #define SetupCaptureTrans_A(timebase, pin_trans) \
+                                                act_unitA = timebase;\
+                                                ipacA = pin_trans;\
+                                                ClearTransLatch();\
+008B                                            EnableEventHandling();
+
+                                        #define SetupCaptureTrans_B(timebase, pin_trans) \
+                                                act_unitB = timebase;\
+                                                ipacB = pin_trans;\
+                                                ClearTransLatch();\
+008C                                            EnableEventHandling();
+
+
+                                        /********************************************************************************/
+
+                                        /* Action Units */
+
+                                        /* Usage: ActionUnitA( MatchTCR1 | MatchTCR2,
+                                                               CaptureTCR1 | CaptureTCR2,
+                                                               GreaterEqual | EqualOnly ); */
+
+008D                                    #define ActionUnitA( match, capture, compare)   (act_unitA=match##capture##compare)
+008E                                    #define ActionUnitB( match, capture, compare)   (act_unitB=match##capture##compare)
+
+008F                                    #define MatchTCR1    Mtcr1_
+0090                                    #define MatchTCR2    Mtcr2_
+0091                                    #define CaptureTCR1  Ctcr1_
+0092                                    #define CaptureTCR2  Ctcr2_
+0093                                    #define GreaterEqual ge
+0094                                    #define EqualOnly    eq
+
+                                        /* SYNONYMS */
+                                        /* Action Unit A, Time Bases for match and capture */
+0095                                    #define TimeBaseAMatchTcr1CaptureTcr1GreaterEqual()      channel.TBSA = Mtcr1_Ctcr1_ge
+0096                                    #define TimeBaseAMatchTcr2CaptureTcr1GreaterEqual()      channel.TBSA = Mtcr2_Ctcr1_ge
+0097                                    #define TimeBaseAMatchTcr1CaptureTcr2GreaterEqual()      channel.TBSA = Mtcr1_Ctcr2_ge
+0098                                    #define TimeBaseAMatchTcr2CaptureTcr2GreaterEqual()      channel.TBSA = Mtcr2_Ctcr2_ge
+0099                                    #define TimeBaseAMatchTcr1CaptureTcr1ExactlyEqual()      channel.TBSA = Mtcr1_Ctcr1_eq
+009A                                    #define TimeBaseAMatchTcr2CaptureTcr1ExactlyEqual()      channel.TBSA = Mtcr2_Ctcr1_eq
+009B                                    #define TimeBaseAMatchTcr1CaptureTcr2ExactlyEqual()      channel.TBSA = Mtcr1_Ctcr2_eq
+009C                                    #define TimeBaseAMatchTcr2CaptureTcr2ExactlyEqual()      channel.TBSA = Mtcr2_Ctcr2_eq
+
+                                        /* Action Unit B, Time Bases for match and capture */
+009D                                    #define TimeBaseBMatchTcr1CaptureTcr1GreaterEqual()      channel.TBSB = Mtcr1_Ctcr1_ge
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 15
+
+
+009E                                    #define TimeBaseBMatchTcr2CaptureTcr1GreaterEqual()      channel.TBSB = Mtcr2_Ctcr1_ge
+009F                                    #define TimeBaseBMatchTcr1CaptureTcr2GreaterEqual()      channel.TBSB = Mtcr1_Ctcr2_ge
+00A0                                    #define TimeBaseBMatchTcr2CaptureTcr2GreaterEqual()      channel.TBSB = Mtcr2_Ctcr2_ge
+00A1                                    #define TimeBaseBMatchTcr1CaptureTcr1ExactlyEqual()      channel.TBSB = Mtcr1_Ctcr1_eq
+00A2                                    #define TimeBaseBMatchTcr2CaptureTcr1ExactlyEqual()      channel.TBSB = Mtcr2_Ctcr1_eq
+00A3                                    #define TimeBaseBMatchTcr1CaptureTcr2ExactlyEqual()      channel.TBSB = Mtcr1_Ctcr2_eq
+00A4                                    #define TimeBaseBMatchTcr2CaptureTcr2ExactlyEqual()      channel.TBSB = Mtcr2_Ctcr2_eq
+
+
+
+                                        /********************************************************************************/
+
+                                        /* Pin output buffer */
+
+00A5                                    #define EnableOutputBuffer()           (channel.TBSA = enable_output_buffer)
+00A6                                    #define DisableOutputBuffer()          (channel.TBSA = disable_output_buffer)
+
+
+                                        /********************************************************************************/
+
+                                        /* Pin control */
+
+                                        /* Pin() definitions */
+00000002                                #define SetHigh pin_high
+00000004                                #define SetLow  pin_low
+00000000                                #define PerPacA pin_opacA
+00000001                                #define PerPacB pin_opacB
+
+                                        /* Set Output Pin
+                                           Usage: Pin( SetHigh | SetLow | PerPacA | PerPacB ); */
+00A7                                    #define Pin( state )          (channel.PIN=state)
+
+                                        /* Immediate output pin */
+00000000                                #define set_pin_per_opacA  pin_opacA
+00000001                                #define set_pin_per_opacB  pin_opacB
+00000002                                #define force_pin_high     pin_high
+00000004                                #define force_pin_low      pin_low
+
+00A8                                    #define SetPinHigh()          (channel.PIN=force_pin_high)
+00A9                                    #define SetPinLow()           (channel.PIN=force_pin_low)
+00AA                                    #define SetPinPerPacA()       (channel.PIN=set_pin_per_opacA)
+00AB                                    #define SetPinPerPacB()       (channel.PIN=set_pin_per_opacB)
+
+                                        /* Reading the pin states: branch conditions */
+
+00AC                                    #define SampledInputPin            channel.PSS
+00AD                                    #define IsLatchedInputPin()        (channel.PSS==1)
+00AE                                    #define IsInputPinHigh()           (channel.PSS==1)
+
+00AF                                    #define CurrentInputPin            channel.PSTI
+00B0                                    #define IsCurrentInputPin()        (channel.PSTI==1)
+
+00B1                                    #define CurrentOutputPin           channel.PSTO
+00B2                                    #define IsCurrentOutputPin()       (channel.PSTO==1)
+
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 16
+
+
+                                        /* SYNONYMS */
+00B3                                    #define IsSampledInputPinHigh()    (channel.PSS==1)
+00B4                                    #define IsLatchedInputPinHigh()    (channel.PSS==1)
+00B5                                    #define IsCurrentInputPinHigh()    (channel.PSTI==1)
+00B6                                    #define IsCurrentOutputPinHigh()   (channel.PSTO==1)
+
+
+
+                                        /********************************************************************************/
+
+                                        /* Output Pin Action */
+
+00000000                                #define NoChange    match_no_change
+00000001                                #define PinHigh     match_high
+00000002                                #define PinLow      match_low
+00000003                                #define PinToggle   match_toggle
+
+                                        /* Usage: OnMatchA( NoChange | PinHigh | PinLow | PinToggle ); */
+00B7                                    #define OnMatchA(action)      (opacA = action)
+00B8                                    #define OnMatchB(action)      (opacB = action)
+
+                                        /* SYNONYMS */
+                                        /* Action Unit A, Output Pin Actions */
+00B9                                    #define OnMatchAPinNoChange()      channel.OPACA = match_no_change
+00BA                                    #define OnMatchAPinHigh()          channel.OPACA = match_high
+00BB                                    #define OnMatchAPinLow()           channel.OPACA = match_low
+00BC                                    #define OnMatchAPinToggle()        channel.OPACA = match_toggle
+00BD                                    #define OnInputActionAPinLow()     channel.OPACA = transition_low
+00BE                                    #define OnInputActionAPinHigh()    channel.OPACA = transition_high
+00BF                                    #define OnInputActionAPinToggle()  channel.OPACA = transition_toggle
+
+                                        /* Action Unit B, Output Pin Actions */
+00C0                                    #define OnMatchBPinNoChange()      channel.OPACB = match_no_change
+00C1                                    #define OnMatchBPinHigh()          channel.OPACB = match_high
+00C2                                    #define OnMatchBPinLow()           channel.OPACB = match_low
+00C3                                    #define OnMatchBPinToggle()        channel.OPACB = match_toggle
+00C4                                    #define OnInputActionBPinLow()     channel.OPACB = transition_low
+00C5                                    #define OnInputActionBPinHigh()    channel.OPACB = transition_high
+00C6                                    #define OnInputActionBPinToggle()  channel.OPACB = transition_toggle
+
+
+                                        /********************************************************************************/
+
+                                        /* Input Pin Action */
+
+00000000                                #define NoDetect  no_detect
+00000001                                #define LowHigh   low_high
+00000002                                #define HighLow   high_low
+00000003                                #define AnyTrans  any_trans
+
+                                        /* Usage: DetectTransA( no_detect | low_high | high_low | any_trans | ...); */
+00C7                                    #define OnTransA(action)     (ipacA = action)
+00C8                                    #define OnTransB(action)     (ipacB = action)
+
+                                        /* SYNONYMS */
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 17
+
+
+                                        /* Action Unit A, Input Pin Edge Detection */
+00C9                                    #define DetectADisable()        channel.IPACA = no_detect
+00CA                                    #define DetectARisingEdge()     channel.IPACA = low_high
+00CB                                    #define DetectAFallingEdge()    channel.IPACA = high_low
+00CC                                    #define DetectAAnyEdge()        channel.IPACA = any_trans
+00CD                                    #define DetectALowOnMatchA()    channel.IPACA = detect_input_0_on_match
+00CE                                    #define DetectAHighOnMatchA()   channel.IPACA = detect_input_1_on_match
+
+                                        /* Action Unit B, Input Pin Edge Detection */
+00CF                                    #define DetectBDisable()        channel.IPACB = no_detect
+00D0                                    #define DetectBRisingEdge()     channel.IPACB = low_high
+00D1                                    #define DetectBFallingEdge()    channel.IPACB = high_low
+00D2                                    #define DetectBAnyEdge()        channel.IPACB = any_trans
+00D3                                    #define DetectBLowOnMatchA()    channel.IPACB = detect_input_0_on_match
+00D4                                    #define DetectBHighOnMatchA()   channel.IPACB = detect_input_1_on_match
+
+
+                                        /********************************************************************************/
+
+                                        /* Intrinsics synonyms */
+
+                                        /* Matches in Threads */
+00D5                                    #define DisableMatchesInThread()    match_disable()
+00D6                                    #define EnableMatchesInThread()     match_enable()
+
+
+
+                                        #endif /* __ETPUC_COMMON_H */
+                                        #include <etpuc.h>
+                                        #ifndef __ETPUC_H
+                                        #define __ETPUC_H
+
+                                        /*
+                                         *  eTPU C Code Development System
+                                         *
+                                         *  Processor register definitions
+                                         *  for the eTPU C Code Development System.
+                                         *
+                                         *  This code may be adapted for any purpose
+                                         *  when used with the eTPU C Code Development
+                                         *  System.  No warranty is implied or given
+                                         *  as to their usability for any purpose.
+                                         *
+                                         *  (c) Copyright 2002-2004 Byte Craft Limited
+                                         *  421 King St.N., Waterloo, ON, Canada, N2J 4E4
+                                         *  VOICE: 1 (519) 888 6911
+                                         *  FAX  : 1 (519) 746 6751
+                                         *  email: support@bytecraft.com
+                                         *
+                                         *  Byte Craft Limited
+                                         *  Waterloo, Ontario
+                                         *  Canada N2J 4E4
+                                         *  (519) 888-6911
+                                         *
+                                         *  Walter Banks
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 18
+
+
+                                         *
+                                         * Revision history
+                                         * ----------------
+                                         * V0.90  WB    Nov 2003  First pre-release of etpuc.h based on V1.10 etpu.h with
+                                         *                        changes to reflect eTPU naming conventions
+                                         * V1.00  WB    Nov 2003  First release changes to the channel fields to reflect
+                                         *                        naming conventions for eTPU
+                                         * V1.01  WB    Dec 2003  Corrected definitions of pin_opacA and pin_opacB
+                                         *
+                                         *
+                                         *
+                                         *  All of the eTPU registers can be directly accessed from C
+                                         *
+
+                                             register_ac        ac   ;      // 24 bits
+                                             register_b         b    ;      // 24 bits
+                                             register_c         c    ;      // 24 bits
+                                             register_d         d    ;      // 24 bits
+                                             register_chan      chan ;      //  5 bits
+                                             register_diob      diob ;      // 24 bits
+                                             register_erta      erta ;      // 24 bits
+                                             register_ertb      ertb ;      // 24 bits
+                                             register_link      link ;      //  8 bits
+                                             register_mach      mach ;      // 24 bits
+                                             register_macl      macl ;      // 24 bits
+                                             register_p         p    ;      // 24 bits
+                                             register_rar       rar  ;      // 14 bits
+                                             register_sr        sr   ;      // 24 bits
+                                             register_tcr1      tcr1 ;      // 24 bits
+                                             register_tcr2      tcr2 ;      // 24 bits
+                                             register_tpr       tpr  ;      // 16 bits
+                                             register_trr       trr  ;      // 24 bits
+                                             register_chan_base chan_base;  // 24 bits
+                                        */
+
+                                        /* The following registers are defined for
+                                           eTPU C application code */
+
+                                             register_chan       chan ;       //  5 bits
+                                             register_erta       erta ;       // 24 bits
+                                             register_ertb       ertb ;       // 24 bits
+                                             register_tcr1       tcr1 ;       // 24 bits
+                                             register_tcr2       tcr2 ;       // 24 bits
+                                             register_tpr        tpr  ;       // 16 bits
+                                             register_trr        trr  ;       // 24 bits
+                                             register_chan_base  chan_base;   // 24 bits
+                                             register_link       link;        // 8 bits
+
+                                        /*
+                                           The link request can be set by copying the
+                                           channel number into the link register. The
+                                           following definition does this.
+                                         */
+
+                                        #define link_request(channel) link = channel
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 19
+
+
+
+                                        /*
+                                         *
+                                         *
+                                         *  All of the eTPU channel fields are predefined as a
+                                         *  large C structure (chan_struct) by the eTPU C compiler.
+                                         *
+                                         *  struct chan {
+                                         *               CIRC   int : 2 ;
+                                         *               ERWA   int : 1 ;
+                                         *               ERWB   int : 1 ;
+                                         *               FLC    int : 3 ;
+                                         *               IPACA  int : 3 ;
+                                         *               IPACB  int : 3 ;
+                                         *               LSR    int : 1 ;  // w test
+                                         *               MRLA   int : 1 ;  // w test
+                                         *               MRLB   int : 1 ;  // w test
+                                         *               MRLE   int : 1 ;
+                                         *               MTD    int : 2 ;
+                                         *               OPACA  int : 3 ;
+                                         *               OPACB  int : 3 ;
+                                         *               PDCM   int : 4 ;
+                                         *               PIN    int : 3 ;
+                                         *               TBSA   int : 4 ;
+                                         *               TBSB   int : 4 ;
+                                         *               TDL    int : 1 ;
+                                         *               SMPR   int : 2 ;
+                                         * State Resolution
+                                         *               FLAG0  int : 1 ;  // w only also defined in FLC
+                                         *               FLAG1  int : 1 ;
+                                         * Channel Flags
+                                         *               FM0    int : 1 ;
+                                         *               FM1    int : 1 ;
+                                         *         //    LSR    int : 1 ;  // also channel fields
+                                         *         //    MRLA   int : 1 ;  // also channel fields
+                                         *         //    MRLB   int : 1 ;  // also channel fields
+                                         *               PSS    int : 1 ;
+                                         *               PSTI   int : 1 ;
+                                         *               PSTO   int : 1 ;
+                                         *               TDLA   int : 1 ;
+                                         *               TDLB   int : 1 ;
+                                         *              }
+                                         ***/
+
+                                        chan_struct channel;
+                                        register_cc        CC;
+
+                                        #define erwA       channel.ERWA
+                                        #define erwB       channel.ERWB
+
+                                        #define flc        channel.FLC
+                                        #define ipacA      channel.IPACA
+                                        #define ipacB      channel.IPACB
+                                        #define lsr        channel.LSR
+
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 20
+
+
+                                        #define mrlA       channel.MRLA
+                                        #define mrlB       channel.MRLB
+                                        #define mrle       channel.MRLE
+                                        #define mtd        channel.MTD
+                                        #define opacA      channel.OPACA
+                                        #define opacB      channel.OPACB
+                                        #define pdcm       channel.PDCM
+                                        #define pin        channel.PIN
+                                        #define act_unitA  channel.TBSA
+                                        #define act_unitB  channel.TBSB
+                                        #define tdl        channel.TDL
+                                        #define flag0      channel.FLAG0
+                                        #define flag1      channel.FLAG1
+                                        #define fm0        channel.FM0
+                                        #define fm1        channel.FM1
+                                        #define pss        channel.PSS
+                                        #define psti       channel.PSTI
+                                        #define psto       channel.PSTO
+                                        #define tdlA       channel.TDLA
+                                        #define tdlB       channel.TDLB
+
+
+                                        // IPAC 1,2
+                                        #define no_detect                 0
+                                        #define low_high                  1
+                                        #define high_low                  2
+                                        #define any_trans                 3
+                                        #define detect_input_0_on_match   4
+                                        #define detect_input_1_on_match   5
+                                        #define no_change_ipac            7
+
+                                        // OPAC 1,2  fields
+
+                                        #define match_no_change   0
+                                        #define match_high        1
+                                        #define match_low         2
+                                        #define match_toggle      3
+                                        #define opac_high         1
+                                        #define opac_low          2
+                                        #define toggle            3
+                                        #define opac_high_low     4
+                                        #define opac_low_high     5
+                                        #define transition_low    4
+                                        #define transition_high   5
+                                        #define transition_toggle 6
+
+                                        // PDCM fields
+                                        #define em_b_st  0              //Either Match, Blocking, Single Transition
+                                        #define em_b_dt  1              //Either Match, Blocking, Double Transition
+                                        #define em_nb_st 2              //Either Match, NonBlocking, Single Transition
+                                        #define em_nb_dt 3              //Either Match, NonBlocking, Double Transition
+                                        #define m2_st    4              //Match2, Single, Transition
+                                        #define m2_dt    5              //Match2, Double, Transition
+                                        #define bm_st    6              //Both Match, Single Transition
+                                        #define bm_dt    7              //Both Match, Double Transition
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 21
+
+
+                                        #define m2_o_st  8              //Match2, Ordered, Single Transition
+                                        #define m2_o_dt  9              //Match2, Ordered, Double Transition
+                                        #define sm_st_e  0xE                //Single Match, Single Transition, Enhanced
+                                        #define sm_st    0xC                //Single Match, Single Transition
+                                        #define sm_dt    0xD                //Single Match, Double Transition
+
+                                        // Time Bases Selection for match and capture
+                                        #define Mtcr1_Ctcr1_ge       0      //Match tcr1, Capture tcr1, greater than
+                                        #define Mtcr2_Ctcr1_ge       1      //Match tcr2, Capture tcr1, greater than
+                                        #define Mtcr1_Ctcr2_ge       2      //Match tcr1, Capture tcr2, greater than
+                                        #define Mtcr2_Ctcr2_ge       3      //Match tcr2, Capture tcr2, greater than
+                                        #define Mtcr1_Ctcr1_eq       4      //Match tcr1, Capture tcr1, equal
+                                        #define Mtcr2_Ctcr1_eq       5      //Match tcr2, Capture tcr1, equal
+                                        #define Mtcr1_Ctcr2_eq       6      //Match tcr1, Capture tcr2, equal
+                                        #define Mtcr2_Ctcr2_eq       7      //Match tcr2, Capture tcr2, equal
+
+                                        #define enable_output_buffer  8     // TBSx[3] = 1, TBSx[2:0] = 000
+                                        #define disable_output_buffer 9     // TBSx[3] = 1, TBSx[2:0] = 001
+                                        #define do_nothing       15     // TBSx[3] = 1, TBSx[2:0] = 111
+
+                                        // Time Bases Selection for transition and capture
+                                        #define Capture_tcr1        0       //TBSx[2] = 0
+                                        #define Capture_tcr2        2       //TBSx[2] = 1
+
+                                        // Tooth Program Register structure
+
+                                        struct tpr_struct {
+                                          int TICKS   : 10;
+                                          int TPR10   : 1;
+                                          int HOLD    : 1;
+                                          int IPH     : 1;
+                                          int MISSCNT : 2;
+                                          int LAST    : 1;
+                                          } ;
+
+                                        // pin definitions
+                                        //   pin = pin_high;
+                                        #define pin_opacA  0
+                                        #define pin_opacB  1
+                                        #define pin_high   2
+                                        #define pin_low    4
+
+                                        #endif /* __ETPUC_H */
+
+
+                                        /* 如果作为函数集，则放置在对应的位置，否则仅有一个函数 */
+                                        #ifdef FUEL_FUNCTION_NUMBER
+                                        #pragma ETPU_function FuelMain, alternate @ FUEL_FUNCTION_NUMBER;
+                                        #else
+0000                                    #pragma ETPU_function FuelMain, alternate;
+                                        #endif
+
+00000007                                #define FUEL_INIT 7
+00000003                                #define FUEL_INJ_TIME_UPDATE 3
+
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 22
+
+
+00000000                                #define FUEL_FLAG1_RAIL    0
+00000001                                #define FUEL_FLAG1_NORMAL      1
+00000000                                #define FUEL_FLAG0_ACTIVE    0
+00000001                                #define FUEL_FLAG0_INACTIVE  1
+
+                                        #endif
+
+
+                                        /*******************************************************************************
+                                         * restrictAngle
+                                         *
+                                         * 描述:将角度计数限制在[0, angleTickPerEngCycle)区间内
+                                         *
+                                         * 参数：
+                                         * 输入参数:
+                                         *     angle: 输入角度计数
+                                         *     angleTickPerEngCycle: 引擎每圈的角度计数值，以TCR2计数为单位
+                                         *
+                                         * 输出参数:
+                                         *     返回值: 限制后的角度计数
+                                         *
+                                         * 备注:
+                                         *
+                                         * 遗留问题:
+                                         ******************************************************************************/
+                                        unsigned int24 restrictAngle(unsigned int24 angle, unsigned int24 angleTickPerEngCycle)
+0001 0005                               {
+0009                                        unsigned int24 temp;
+0200 9FEFFB00   ram p23_0 = 0001.           if (angle >= 0x800000)
+0204 7CFF0FFF   alu a = $800000 .       
+0208 3838FFF4   alu nil = p - a ,ccs.        {
+020C F088111F   if c==1 jump 0220,flush.         
+                                        
+0210 9FEFFB01   ram p23_0 = 0005.               temp = angleTickPerEngCycle + angle;
+0214 9FE80A00   alu a = p ,ccs;         
+                    ram p23_0 = 0001.         
+                                            }
+0218 F7E0129F   jump 0250,noflush.                    else if (angle >= angleTickPerEngCycle)
+021C 9F197A02   alu p = a + p ,ccs;         
+                    ram 0009 = p23_0.         
+0220 9FEFFB00   ram p23_0 = 0001.           {
+0224 9FE80A01   alu a = p ,ccs;         
+                    ram p23_0 = 0005.         
+0228 3819FFF4   alu nil = a - p ,ccs.         
+022C F088125F   if c==1 jump 0248,flush.         
+                                        
+0230 9FEFFB00   ram p23_0 = 0001.               temp = angle % angleTickPerEngCycle;
+0234 9FE80A01   alu a = p ,ccs;         
+                    ram p23_0 = 0005.         
+0238 3B190FEE   mdu a div p ,ccs.         
+023C F34811FF   if mb==1 jump 023C,flush         
+                    .                   
+                                            }
+0240 F7E0129F   jump 0250,noflush.                    else
+0244 9FD77A02   alu p = mach ,ccs;         
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 23
+
+
+                    ram 0009 = p23_0.         
+                                            {
+0248 9FEFFB00   ram p23_0 = 0001.               temp = angle;
+024C 9FFFFB02   ram 0009 = p23_0.         
+0250                                        }
+0250 9FEFFB02   ram p23_0 = 0009.           return temp;
+0254 FFFFCCF9   return,noflush.         
+0258 3BF80FF4   alu a = p ,ccs.         
+                                           }
+
+                                        /*******************************************************************************
+                                         * judgeFuture
+                                         *
+                                         * 描述:以角度时钟为基准，判断dest在src的未来还是过去
+                                         *
+                                         * 参数：
+                                         * 输入参数:
+                                         *     dest: 要判断的角度时钟计数
+                                         *     src: 目标角度计数
+                                         *     angleTickPerEngCycle: 引擎每圈的角度计数值，以TCR2计数为单位
+                                         *
+                                         * 输出参数:
+                                         *     返回值: 若dest在src的未来，则为1，否则为0
+                                         *
+                                         * 备注: 未来指的是dest相对于src还未发生，例如角度计数为600的事件相对于500的还
+                                         * 未发生，再例如角度计数为10的相对于35900的事件也未发生，本函数判断当dest与src
+                                         * 的差值在±180度以内，认为dest处于src的未来，否则认为处于过去
+                                         *
+                                         * 遗留问题:
+                                         ******************************************************************************/
+                                        unsigned int8 judgeFuture(unsigned int24 dest,
+                                                                  unsigned int24 src,
+                                                                  unsigned int24 angleTickPerEngCycle)
+000D 0011 0015                          {
+0000                                        unsigned int8 temp;
+                                            
+025C 9FEFFB03   ram p23_0 = 000D.           if (dest > src)
+0260 9FE80A04   alu a = p ,ccs;         
+                    ram p23_0 = 0011.    
+0264 3819FFF4   alu nil = a - p ,ccs.        {
+0268 F4C8151F   if ls jump 02A0,flush.    
+026C 9FEFFB03   ram p23_0 = 000D.               if (dest - src < angleTickPerEngCycle / 4)
+0270 9FE80A04   alu a = p ,ccs;                 {
+                    ram p23_0 = 0011.         
+0274 38193FD4   alu b = a - p ,ccs.         
+0278 9FEFFB05   ram p23_0 = 0015.         
+027C 18080B92   alu a = p >>2,ccs.         
+0280 38330FB4   alu a = b - a ,ccs.         
+0284 F08014BF   if c==0 jump 0294,flush.         
+                                        
+0288 3DFFAFF4   alu p31_24 = 1 .                    temp = 1;
+028C CFFFF100   ram 0000 = p31_24.         
+                                                }
+0290 F7C0179F   jump 02F0,flush.                        else
+                                                {
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 24
+
+
+0294 3FFFAFF2   alu p31_24 = 0 .                    temp = 0;
+0298 CFFFF100   ram 0000 = p31_24.         
+                                                }
+                                            }
+029C F7C0179F   jump 02F0,flush.                    else if (dest < src)
+02A0 9FEFFB03   ram p23_0 = 000D.           {
+02A4 9FE80A04   alu a = p ,ccs;         
+                    ram p23_0 = 0011.         
+02A8 3819FFF4   alu nil = a - p ,ccs.         
+02AC F080175F   if c==0 jump 02E8,flush.    
+                                        
+02B0 9FEFFB03   ram p23_0 = 000D.               if (dest + angleTickPerEngCycle - src < angleTickPerEngCycle / 4)
+02B4 9FE80A05   alu a = p ,ccs;         
+                    ram p23_0 = 0015.    
+02B8 9F090A04   alu a = a + p ,ccs;             {
+                    ram p23_0 = 0011.         
+02BC 38193FD4   alu b = a - p ,ccs.         
+02C0 9FEFFB05   ram p23_0 = 0015.         
+02C4 18080B92   alu a = p >>2,ccs.         
+02C8 38330FB4   alu a = b - a ,ccs.         
+02CC F08016FF   if c==0 jump 02DC,flush.         
+                                        
+02D0 3DFFAFF4   alu p31_24 = 1 .                    temp = 1;
+02D4 CFFFF100   ram 0000 = p31_24.         
+                                                }
+02D8 F7C0179F   jump 02F0,flush.                        else
+                                                {
+02DC 3FFFAFF2   alu p31_24 = 0 .                    temp = 0;   
+02E0 CFFFF100   ram 0000 = p31_24.         
+                                                }
+                                            }
+02E4 F7C0179F   jump 02F0,flush.                    else
+                                            {
+02E8 3FFFAFF2   alu p31_24 = 0 .                temp = 0;   
+02EC CFFFF100   ram 0000 = p31_24.         
+                                            }
+                                            
+02F0 CFEFF100   ram p31_24 = 0000.          return temp;
+02F4 3BF20FF4   alu a = p31_24 ,ccs.         
+02F8 FFFFCCF9   return,noflush.         
+02FC 0BF90BFA   alu a = a & #0x0000FF,         
+                    ccs.                
+                                           }
+
+                                        /*******************************************************************************
+                                         * FuelMain
+                                         *
+                                         * 描述:喷油函数
+                                         *
+                                         * 参数：
+                                         * 输入参数:
+                                         *     angleOffset: 本缸角度偏移，以TCR2个数为单位
+                                         *     pInjTimeArr: 保存喷油起始角度计数和持续时间计数的数组，数组应包含10个
+                                         *         元素，其中起始角度指的是与1缸上止点的角度偏移，正值为往前偏移，负值
+                                         *         表示往后偏移，元素具体定义为：
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 25
+
+
+                                         *         元素0和1分别表示预喷2的起始角度，预喷2的持续时间
+                                         *         元素2和3分别表示预喷1的起始角度，预喷1的持续时间
+                                         *         元素4和5分别表示主喷的起始角度，主喷的持续时间
+                                         *         元素6和7分别表示后喷1的起始角度，后喷1的持续时间
+                                         *         元素8和9分别表示后喷2的起始角度，后喷2的持续时间
+                                         *     railPressAngle: 轨压中断与第一次喷油提前的角度偏移
+                                         *     exprEdgeAngle: 凸轮标记齿对应的角度计数，认为这个角度是1缸上止点，该值为
+                                         *         经验值，用于通道初始化时还无法获取凸轮标记齿的角度
+                                         *     angleTickPerEngCycle: 引擎每圈的角度计数值，以TCR2计数为单位
+                                         *     railPressChn: 产生轨压中断的通道
+                                         *
+                                         * 输出参数:
+                                         *
+                                         * 备注: ETPU程序在取地址或进行地址参数传递时需要注意，24位变量起始地址应为
+                                         * 1,5,9,D等，因此在传递地址时，需要特别注意24位变量的起始地址。对于数组也存在
+                                         * 一样的问题，传递数组首地址时应传递数组第0个元素的地址
+                                         *
+                                         * 遗留问题:
+                                         ******************************************************************************/
+                                        void FuelMain(unsigned int24 angleOffset, /*本缸角度偏移*/
+                                                      unsigned int24 *pInjTimeArr, /*所有喷油时长，以及相邻两次喷射的间隔时间，均以TCR1计数为单位*/
+                                                      unsigned int24 railPressAngle, /*喷油结束角度*/
+                                                      unsigned int24 exprEdgeAngle, /*凸轮标记齿的经验角度*/
+                                                      unsigned int24 angleTickPerEngCycle, /*引擎每圈的角度计数值*/
+                                                      unsigned int8 railPressChn, /*产生轨压中断的通道*/
+                                                      unsigned int8 enableChn)
+0001 0005 0009 000D 0011 0000 0004      {
+                                            /* 索引seqArr，即当前喷到第几次 */
+0008                                        static unsigned int8 injTimes;
+                                            /* 喷油输出有效状态标志 */
+000C                                        static unsigned int8 flagPulse;
+0010                                        static unsigned int8 flag1Mirror;
+                                            /* 保存凸轮标记齿角度 */
+0015                                        static unsigned int24 edgeAngle;
+                                            /* 备份凸轮标记齿角度 */
+0019                                        static unsigned int24 edgeAngleBack;
+                                            /* 保存喷油有效时，每次喷油脉冲跳变的起始时间 */
+001D                                        static unsigned int24 injChangeTime;
+                                            /* 保存正在执行的喷油序列 */
+0021 0028                                   static unsigned int24 tempInjArr[10];
+
+                                            /* 当喷油无效时更新喷油序列，此时直接更新即可 */
+                                            if (hsr == FUEL_INJ_TIME_UPDATE && flag0 == FUEL_FLAG0_INACTIVE)
+                                            {
+00BA                                            unsigned int24 temp;
+                                                
+0300 BFEFFF81   ram diob = PRAM5.               tempInjArr[0] = pInjTimeArr[0];
+0304 FFEFFAD9   ram p23_0 = (diob).         
+0308 BFFFFB88   ram PRAM33 = p23_0.         
+030C BFEFFF81   ram diob = PRAM5.               tempInjArr[1] = pInjTimeArr[1];
+0310 181B4782   alu diob = diob + #0x04,         
+                    ccs.                
+0314 FFEFFAD9   ram p23_0 = (diob).         
+0318 BFFFFB89   ram PRAM37 = p23_0.         
+031C BFEFFF81   ram diob = PRAM5.               tempInjArr[2] = pInjTimeArr[2];
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 26
+
+
+0320 182B4782   alu diob = diob + #0x08,         
+                    ccs.                
+0324 FFEFFAD9   ram p23_0 = (diob).         
+0328 BFFFFB8A   ram PRAM41 = p23_0.         
+032C BFEFFF81   ram diob = PRAM5.               tempInjArr[3] = pInjTimeArr[3];
+0330 183B4782   alu diob = diob + #0x0C,         
+                    ccs.                
+0334 FFEFFAD9   ram p23_0 = (diob).         
+0338 BFFFFB8B   ram PRAM45 = p23_0.         
+033C BFEFFF81   ram diob = PRAM5.               tempInjArr[4] = pInjTimeArr[4];
+0340 184B4782   alu diob = diob + #0x10,         
+                    ccs.                
+0344 FFEFFAD9   ram p23_0 = (diob).         
+0348 BFFFFB8C   ram PRAM49 = p23_0.         
+034C BFEFFF81   ram diob = PRAM5.               tempInjArr[5] = pInjTimeArr[5];
+0350 185B4782   alu diob = diob + #0x14,         
+                    ccs.                
+0354 FFEFFAD9   ram p23_0 = (diob).         
+0358 BFFFFB8D   ram PRAM53 = p23_0.         
+035C BFEFFF81   ram diob = PRAM5.               tempInjArr[6] = pInjTimeArr[6];
+0360 186B4782   alu diob = diob + #0x18,         
+                    ccs.                
+0364 FFEFFAD9   ram p23_0 = (diob).         
+0368 BFFFFB8E   ram PRAM57 = p23_0.         
+036C BFEFFF81   ram diob = PRAM5.               tempInjArr[7] = pInjTimeArr[7];
+0370 187B4782   alu diob = diob + #0x1C,         
+                    ccs.                
+0374 FFEFFAD9   ram p23_0 = (diob).         
+0378 BFFFFB8F   ram PRAM61 = p23_0.         
+037C BFEFFF81   ram diob = PRAM5.               tempInjArr[8] = pInjTimeArr[8];
+0380 188B4782   alu diob = diob + #0x20,         
+                    ccs.                
+0384 FFEFFAD9   ram p23_0 = (diob).         
+0388 BFFFFB90   ram PRAM65 = p23_0.         
+038C BFEFFF81   ram diob = PRAM5.               tempInjArr[9] = pInjTimeArr[9];
+0390 189B4782   alu diob = diob + #0x24,         
+                    ccs.                
+0394 FFEFFAD9   ram p23_0 = (diob).         
+
+                                                ClearMatchAEvent();
+                                                /* 此时说明最后一次喷油已完成，但还没到轨压中断 */
+0398 DFFF7A91   ram PRAM69 = p23_0;     
+                    chan clr_mrla.      
+039C CFEFF884   ram p31_0 = PRAM16.             if (flag1Mirror == FUEL_FLAG1_RAIL)
+03A0 3BF20FF4   alu a = p31_24 ,ccs.            {
+                                                    /* 修改轨压中断的角度 */
+03A4 F0C01ECD   if z==0 jump 03D8,flush;                temp = edgeAngle - tempInjArr[0] + angleOffset - railPressAngle;
+                    ram p23_0 = PRAM21.         
+03A8 BFE80A88   alu a = p ,ccs;         
+                    ram p23_0 = PRAM33.         
+03AC BC090A80   alu a = a - p ,ccs;         
+                    ram p23_0 = PRAM1.         
+03B0 BF090A82   alu a = a + p ,ccs;         
+                    ram p23_0 = PRAM9.         
+03B4 38195FD4   alu d = a - p ,ccs.         
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 27
+
+
+03B8 9FF47A00   alu p = d ,ccs;                     temp = restrictAngle(temp, angleTickPerEngCycle);
+                    ram 0001 = p23_0.         
+03BC BFEFFB84   ram p23_0 = PRAM17.         
+03C0 FFE0101F   call 0200,noflush.         
+03C4 9FFFFB01   ram 0005 = p23_0.         
+03C8 3BF95FD4   alu d = a ,ccs.         
+                                                
+                                                    erta = temp;
+03CC 3BF42FF4   alu erta = d ,ccs.         
+03D0                                                ActionUnitA(MatchTCR2, CaptureTCR1, EqualOnly);
+                                                    WriteErtAToMatchAAndEnable();
+                                                }
+                                                /* 此时说明轨压中断已产生，但还没有开始首次喷油 */
+03D0 F7E0221F   jump 0440,noflush.                        else
+03D4 4FF5FF7F                           
+                    chan tbsa = mtcr2_ctcr1_eq         
+                    ,write_erta.         
+                                                {
+                                                    /* 计算新的首次喷油角度 */
+03D8 BFEFFB85   ram p23_0 = PRAM21.                 temp = edgeAngle - tempInjArr[0] + angleOffset;
+03DC BFE80A88   alu a = p ,ccs;         
+                    ram p23_0 = PRAM33.         
+03E0 BC090A80   alu a = a - p ,ccs;         
+                    ram p23_0 = PRAM1.         
+03E4 3B195FD4   alu d = a + p ,ccs.         
+03E8 9FF47A00   alu p = d ,ccs;                     temp = restrictAngle(temp, angleTickPerEngCycle);
+                    ram 0001 = p23_0.         
+03EC BFEFFB84   ram p23_0 = PRAM17.         
+03F0 FFE0101F   call 0200,noflush.         
+03F4 9FFFFB01   ram 0005 = p23_0.         
+03F8 3BF95FD4   alu d = a ,ccs.         
+                                                    
+                                                    /* 若首次喷油角度在未来，则可以直接调度 */
+03FC 9FF47A03   alu p = d ,ccs;                     if (judgeFuture(temp, tcr2, angleTickPerEngCycle) == 1)
+                    ram 000D = p23_0.         
+0400 9FFD7A04   alu p = tcr2 ,ccs;         
+                    ram 0011 = p23_0.         
+0404 BFEFFB84   ram p23_0 = PRAM17.         
+0408 FFE012FF   call 025C,noflush.                  {
+040C 9FFFFB05   ram 0015 = p23_0.         
+0410 3AF9FFF4   alu nil = a -1 ,ccs.         
+0414 F0C0211F   if z==0 jump 0420,flush.         
+                                        
+0418                                                    erta = temp;
+                                                    }
+                                                    /* 若首次喷油角度在过去，则立即开始 */
+0418 F7E0213F   jump 0424,noflush.                            else
+041C 3BF42FF4   alu erta = d ,ccs.         
+                                                    {
+                                                        erta = tcr2 + 1;
+0420 39FD2FF4   alu erta = tcr2 + 1 ,ccs         
+                    .                   
+0424                                                }
+                                                    
+0424 BFEFFB89   ram p23_0 = PRAM37.                 if (tempInjArr[1] == 0)
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 28
+
+
+0428 3BF8FFF4   alu nil = p ,ccs.                   {
+042C F0C021DF   if z==0 jump 0438,flush.         
+                                        
+0430                                                    OnMatchAPinNoChange();
+                                                    }
+0430 F7E021FF   jump 043C,noflush.                            else
+0434 48FFFFFF   chan opaca = no_change.         
+                                                    {
+                                                        OnMatchAPinHigh();
+0438 49FFFFFF   chan opaca = high.         
+043C                                                }
+                                                    
+                                                    ActionUnitA(MatchTCR2, CaptureTCR1, EqualOnly);
+                                                    WriteErtAToMatchAAndEnable();
+043C 4FF5FF7F                           
+                    chan tbsa = mtcr2_ctcr1_eq         
+                    ,write_erta.         
+0440                                            }
+0440 6FFFFFFF   end.                        }
+0002 40 C0        00 A01 P01 ME 0300  HSR 2/3   lsr x  m1 x  m2 x  pin 0  flag1 x  flag0 1                             
+0006 40 C0        00 A03 P01 ME 0300  HSR 2/3   lsr x  m1 x  m2 x  pin 1  flag1 x  flag0 1                             
+                                         
+0000             Thread Local RAM size                                   
+                                            /* 当喷油有效时更新喷油序列，需要根据当前喷油的状态更新本次以及还未发生的
+                                             * 喷油，已经发生的不会改变 */
+                                            else if (hsr == FUEL_INJ_TIME_UPDATE && flag0 == FUEL_FLAG0_ACTIVE)
+                                            {
+00BA                                            unsigned int24 temp;
+
+0444 BFEFFF81   ram diob = PRAM5.               tempInjArr[0] = pInjTimeArr[0];
+0448 FFEFFAD9   ram p23_0 = (diob).         
+044C BFFFFB88   ram PRAM33 = p23_0.         
+0450 BFEFFF81   ram diob = PRAM5.               tempInjArr[1] = pInjTimeArr[1];
+0454 181B4782   alu diob = diob + #0x04,         
+                    ccs.                
+0458 FFEFFAD9   ram p23_0 = (diob).         
+045C BFFFFB89   ram PRAM37 = p23_0.         
+0460 BFEFFF81   ram diob = PRAM5.               tempInjArr[2] = pInjTimeArr[2];
+0464 182B4782   alu diob = diob + #0x08,         
+                    ccs.                
+0468 FFEFFAD9   ram p23_0 = (diob).         
+046C BFFFFB8A   ram PRAM41 = p23_0.         
+0470 BFEFFF81   ram diob = PRAM5.               tempInjArr[3] = pInjTimeArr[3];
+0474 183B4782   alu diob = diob + #0x0C,         
+                    ccs.                
+0478 FFEFFAD9   ram p23_0 = (diob).         
+047C BFFFFB8B   ram PRAM45 = p23_0.         
+0480 BFEFFF81   ram diob = PRAM5.               tempInjArr[4] = pInjTimeArr[4];
+0484 184B4782   alu diob = diob + #0x10,         
+                    ccs.                
+0488 FFEFFAD9   ram p23_0 = (diob).         
+048C BFFFFB8C   ram PRAM49 = p23_0.         
+0490 BFEFFF81   ram diob = PRAM5.               tempInjArr[5] = pInjTimeArr[5];
+0494 185B4782   alu diob = diob + #0x14,         
+                    ccs.                
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 29
+
+
+0498 FFEFFAD9   ram p23_0 = (diob).         
+049C BFFFFB8D   ram PRAM53 = p23_0.         
+04A0 BFEFFF81   ram diob = PRAM5.               tempInjArr[6] = pInjTimeArr[6];
+04A4 186B4782   alu diob = diob + #0x18,         
+                    ccs.                
+04A8 FFEFFAD9   ram p23_0 = (diob).         
+04AC BFFFFB8E   ram PRAM57 = p23_0.         
+04B0 BFEFFF81   ram diob = PRAM5.               tempInjArr[7] = pInjTimeArr[7];
+04B4 187B4782   alu diob = diob + #0x1C,         
+                    ccs.                
+04B8 FFEFFAD9   ram p23_0 = (diob).         
+04BC BFFFFB8F   ram PRAM61 = p23_0.         
+04C0 BFEFFF81   ram diob = PRAM5.               tempInjArr[8] = pInjTimeArr[8];
+04C4 188B4782   alu diob = diob + #0x20,         
+                    ccs.                
+04C8 FFEFFAD9   ram p23_0 = (diob).         
+04CC BFFFFB90   ram PRAM65 = p23_0.         
+04D0 BFEFFF81   ram diob = PRAM5.               tempInjArr[9] = pInjTimeArr[9];
+04D4 189B4782   alu diob = diob + #0x24,         
+                    ccs.                
+04D8 FFEFFAD9   ram p23_0 = (diob).         
+
+                                                /* 如果输出有效，则还需要更新本次喷油结束的时间 */
+04DC BFFFFB91   ram PRAM69 = p23_0.     
+04E0 CFEFF883   ram p31_0 = PRAM12.             if (flagPulse == 1)
+04E4 0802FBAA   alu nil = p31_24 ^              {
+                    #0x000001,ccs.         
+04E8 F0C028FF   if z==0 jump 051C,flush.         
+                                        
+04EC CFEFF882   ram p31_0 = PRAM8.                  temp = injChangeTime + tempInjArr[(injTimes << 1) + 1];
+04F0 3BF20FF5   alu a = p31_24 <<1,ccs.         
+04F4 39F90FF4   alu a = a + 1 ,ccs.         
+04F8 3B394FF5   alu diob = a + a <<1,ccs         
+                    .                   
+04FC 188B4782   alu diob = diob + #0x20,         
+                    ccs.                
+0500 3B7A4FB4   alu                     
+                    diob = chan_base + diob          
+                    ,ccs.               
+0504 FFEFFAD9   ram p23_0 = (diob).         
+0508 BFE80A87   alu a = p ,ccs;         
+                    ram p23_0 = PRAM29.         
+050C 3B195FD4   alu d = a + p ,ccs.         
+0510 3BF43FF4   alu ertb = d ,ccs.                  SetupMatch_B(temp, Mtcr1_Ctcr2_ge, match_low);
+0514 4F5F2F9F   chan opacb = low,         
+                    tbsb = mtcr1_ctcr2_ge         
+                    ,write_ertb,clr_mrlb         
+                    .                   
+                                                }
+
+                                                /* 输出无效时，说明本次已经结束，更新下次喷油开始角度；输出有效也需要
+                                                 * 更新下次喷油的开始角度 */
+0518 FF3FFCFB   chan mtd = enable_mtsr.         
+051C CFEFF882   ram p31_0 = PRAM8.              if (injTimes >= 4)
+0520 1C1F0F9E   alu a = #0x04.          
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 30
+
+
+0524 3832FFF4   alu nil = p31_24 - a ,            {
+                    ccs.                
+                                                    /* 计算产生轨压中断的角度 */
+0528 F0882B0D   if c==1 jump 0560,flush;                temp = edgeAngle - tempInjArr[0] + angleOffset - railPressAngle;
+                    ram p23_0 = PRAM21.         
+052C BFE80A88   alu a = p ,ccs;         
+                    ram p23_0 = PRAM33.         
+0530 BC090A80   alu a = a - p ,ccs;         
+                    ram p23_0 = PRAM1.         
+0534 BF090A82   alu a = a + p ,ccs;         
+                    ram p23_0 = PRAM9.         
+0538 38195FD4   alu d = a - p ,ccs.         
+053C 9FF47A00   alu p = d ,ccs;                     temp = restrictAngle(temp, angleTickPerEngCycle);
+                    ram 0001 = p23_0.         
+0540 BFEFFB84   ram p23_0 = PRAM17.         
+0544 FFE0101F   call 0200,noflush.         
+0548 9FFFFB01   ram 0005 = p23_0.         
+054C 3BF95FD4   alu d = a ,ccs.         
+0550 3BF42FF4   alu erta = d ,ccs.                  SetupMatch_A(temp, Mtcr2_Ctcr1_eq, match_low);
+0554 4AF5FE7F   chan opaca = low,         
+                    tbsa = mtcr2_ctcr1_eq         
+                    ,write_erta,clr_mrla         
+                    .                   
+                                                }
+                                                /* 如果本次不是最后一次喷油，则计算下次喷油的起始角度 */
+0558 F7E02FFF   jump 05FC,noflush.                        else
+055C FF3FFCFB   chan mtd = enable_mtsr.         
+                                                {
+                                                    ClearMatchAEvent();
+                                                    /* 计算下次喷油的起始角度 */
+0560 DFEF7882   ram p31_0 = PRAM8;                  temp = edgeAngle - tempInjArr[(injTimes + 1) << 1] + angleOffset;
+                    chan clr_mrla.         
+0564 39F20FF4   alu a = p31_24 + 1 ,ccs.         
+                                        
+0568 3BF90FF5   alu a = a <<1,ccs.         
+056C B3294A85   alu diob = a + a <<1 ,         
+                    ccs;                
+                    ram p23_0 = PRAM21.         
+0570 3BF80FF4   alu a = p ,ccs.         
+0574 188B4782   alu diob = diob + #0x20,         
+                    ccs.                
+0578 3B7A4FB4   alu                     
+                    diob = chan_base + diob          
+                    ,ccs.               
+057C FFEFFAD9   ram p23_0 = (diob).         
+0580 BC090A80   alu a = a - p ,ccs;         
+                    ram p23_0 = PRAM1.         
+0584 3B195FD4   alu d = a + p ,ccs.         
+0588 9FF47A00   alu p = d ,ccs;                     temp = restrictAngle(temp, angleTickPerEngCycle);
+                    ram 0001 = p23_0.         
+058C BFEFFB84   ram p23_0 = PRAM17.         
+0590 FFE0101F   call 0200,noflush.         
+0594 9FFFFB01   ram 0005 = p23_0.         
+0598 3BF95FD4   alu d = a ,ccs.         
+                                                    
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 31
+
+
+                                                    /* 若首次喷油角度在未来，则可以直接调度 */
+059C 9FF47A03   alu p = d ,ccs;                     if (judgeFuture(temp, tcr2, angleTickPerEngCycle) == 1)
+                    ram 000D = p23_0.         
+05A0 9FFD7A04   alu p = tcr2 ,ccs;         
+                    ram 0011 = p23_0.         
+05A4 BFEFFB84   ram p23_0 = PRAM17.         
+05A8 FFE012FF   call 025C,noflush.                  {
+05AC 9FFFFB05   ram 0015 = p23_0.         
+05B0 3AF9FFF4   alu nil = a -1 ,ccs.         
+05B4 F0C02E1F   if z==0 jump 05C0,flush.         
+                                        
+05B8                                                    erta = temp;
+                                                    }
+                                                    /* 若首次喷油角度在过去，则立即开始 */
+05B8 F7E02E3F   jump 05C4,noflush.                            else
+05BC 3BF42FF4   alu erta = d ,ccs.         
+                                                    {
+                                                        erta = tcr2 + 1;
+05C0 39FD2FF4   alu erta = tcr2 + 1 ,ccs         
+                    .                   
+05C4                                                }
+                                                    
+05C4 CFEFF882   ram p31_0 = PRAM8.                  if (tempInjArr[((injTimes + 1) << 1) + 1] == 0)
+05C8 39F20FF4   alu a = p31_24 + 1 ,ccs.                {
+                                        
+05CC 3BF90FF5   alu a = a <<1,ccs.         
+05D0 39F90FF4   alu a = a + 1 ,ccs.         
+05D4 3B394FF5   alu diob = a + a <<1,ccs         
+                    .                   
+05D8 188B4782   alu diob = diob + #0x20,         
+                    ccs.                
+05DC 3B7A4FB4   alu                     
+                    diob = chan_base + diob          
+                    ,ccs.               
+05E0 FFEFFAD9   ram p23_0 = (diob).         
+05E4 3BF80FF4   alu a = p ,ccs.         
+05E8 F0C02FBF   if z==0 jump 05F4,flush.         
+                                        
+05EC                                                    OnMatchAPinNoChange();
+                                                    }
+05EC F7E02FDF   jump 05F8,noflush.                            else
+05F0 48FFFFFF   chan opaca = no_change.         
+                                                    {
+                                                        OnMatchAPinHigh();
+05F4 49FFFFFF   chan opaca = high.         
+05F8                                                }
+                                                    
+                                                    ActionUnitA(MatchTCR2, CaptureTCR1, EqualOnly);
+                                                    WriteErtAToMatchAAndEnable();
+05F8 4FF5FF7F                           
+                    chan tbsa = mtcr2_ctcr1_eq         
+                    ,write_erta.         
+05FC                                            }
+05FC 6FFFFFFF   end.                        }
+0000 41 11        00 A00 P01 ME 0444  HSR 2/3   lsr x  m1 x  m2 x  pin 0  flag1 x  flag0 0                             
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 32
+
+
+0004 41 11        00 A02 P01 ME 0444  HSR 2/3   lsr x  m1 x  m2 x  pin 1  flag1 x  flag0 0                             
+                                         
+0000             Thread Local RAM size                                   
+                                            /* 初始化或发生链接请求，链接请求由曲轴发出，若停车则重新初始化 */
+                                            else if ((hsr == FUEL_INIT) || (lsr == 1 && m1 == 0 && m2 == 0))
+                                            {
+00BA                                            unsigned int24 temp;
+                                                
+                                                DisableMatchesInThread();
+                                                OnTransA(NoDetect);
+                                                OnTransB(NoDetect);
+                                                ClearLSRLatch();
+                                                ClearTransLatch();
+                                                ClearMatchAEvent();
+                                                ClearMatchBEvent();
+
+                                                /* 设置通道模式 */
+                                                SetChannelMode(em_nb_st);
+                                                EnableOutputBuffer();
+                                                SetPinLow();
+
+                                                /* 初始化凸轮标记齿角度，直接使用经验值 */
+0600 5808F4A4   chan pin = low,         
+                    ipaca = no_detect,         
+                    ipacb = no_detect,         
+                    tbsa = obe_on,         
+                    em_nb_st,clr_lsr,         
+                    clr_mrla,clr_mrlb,         
+                    clr_tdl.            
+0604 BFEFFB83   ram p23_0 = PRAM13.             edgeAngleBack = exprEdgeAngle;
+0608 BFFFFB86   ram PRAM25 = p23_0.         
+060C BFEFFB83   ram p23_0 = PRAM13.             edgeAngle = exprEdgeAngle;
+
+0610 BFFFFB85   ram PRAM21 = p23_0.         
+0614 BFEFFF81   ram diob = PRAM5.               tempInjArr[0] = pInjTimeArr[0];
+0618 FFEFFAD9   ram p23_0 = (diob).         
+061C BFFFFB88   ram PRAM33 = p23_0.         
+0620 BFEFFF81   ram diob = PRAM5.               tempInjArr[1] = pInjTimeArr[1];
+0624 181B4782   alu diob = diob + #0x04,         
+                    ccs.                
+0628 FFEFFAD9   ram p23_0 = (diob).         
+062C BFFFFB89   ram PRAM37 = p23_0.         
+0630 BFEFFF81   ram diob = PRAM5.               tempInjArr[2] = pInjTimeArr[2];
+0634 182B4782   alu diob = diob + #0x08,         
+                    ccs.                
+0638 FFEFFAD9   ram p23_0 = (diob).         
+063C BFFFFB8A   ram PRAM41 = p23_0.         
+0640 BFEFFF81   ram diob = PRAM5.               tempInjArr[3] = pInjTimeArr[3];
+0644 183B4782   alu diob = diob + #0x0C,         
+                    ccs.                
+0648 FFEFFAD9   ram p23_0 = (diob).         
+064C BFFFFB8B   ram PRAM45 = p23_0.         
+0650 BFEFFF81   ram diob = PRAM5.               tempInjArr[4] = pInjTimeArr[4];
+0654 184B4782   alu diob = diob + #0x10,         
+                    ccs.                
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 33
+
+
+0658 FFEFFAD9   ram p23_0 = (diob).         
+065C BFFFFB8C   ram PRAM49 = p23_0.         
+0660 BFEFFF81   ram diob = PRAM5.               tempInjArr[5] = pInjTimeArr[5];
+0664 185B4782   alu diob = diob + #0x14,         
+                    ccs.                
+0668 FFEFFAD9   ram p23_0 = (diob).         
+066C BFFFFB8D   ram PRAM53 = p23_0.         
+0670 BFEFFF81   ram diob = PRAM5.               tempInjArr[6] = pInjTimeArr[6];
+0674 186B4782   alu diob = diob + #0x18,         
+                    ccs.                
+0678 FFEFFAD9   ram p23_0 = (diob).         
+067C BFFFFB8E   ram PRAM57 = p23_0.         
+0680 BFEFFF81   ram diob = PRAM5.               tempInjArr[7] = pInjTimeArr[7];
+0684 187B4782   alu diob = diob + #0x1C,         
+                    ccs.                
+0688 FFEFFAD9   ram p23_0 = (diob).         
+068C BFFFFB8F   ram PRAM61 = p23_0.         
+0690 BFEFFF81   ram diob = PRAM5.               tempInjArr[8] = pInjTimeArr[8];
+0694 188B4782   alu diob = diob + #0x20,         
+                    ccs.                
+0698 FFEFFAD9   ram p23_0 = (diob).         
+069C BFFFFB90   ram PRAM65 = p23_0.         
+06A0 BFEFFF81   ram diob = PRAM5.               tempInjArr[9] = pInjTimeArr[9];
+06A4 189B4782   alu diob = diob + #0x24,         
+                    ccs.                
+06A8 FFEFFAD9   ram p23_0 = (diob).         
+
+                                                /* 计算轨压中断的角度 */
+06AC BFFFFB91   ram PRAM69 = p23_0.         
+06B0 BFEFFB85   ram p23_0 = PRAM21.             temp = edgeAngle - tempInjArr[0] + angleOffset - railPressAngle;
+06B4 BFE80A88   alu a = p ,ccs;         
+                    ram p23_0 = PRAM33.         
+06B8 BC090A80   alu a = a - p ,ccs;         
+                    ram p23_0 = PRAM1.         
+06BC BF090A82   alu a = a + p ,ccs;         
+                    ram p23_0 = PRAM9.         
+06C0 38195FD4   alu d = a - p ,ccs.         
+06C4 9FF47A00   alu p = d ,ccs;                 temp = restrictAngle(temp, angleTickPerEngCycle);
+                    ram 0001 = p23_0.         
+06C8 BFEFFB84   ram p23_0 = PRAM17.         
+06CC FFE0101F   call 0200,noflush.         
+06D0 9FFFFB01   ram 0005 = p23_0.         
+06D4 3BF95FD4   alu d = a ,ccs.         
+06D8 3BF42FF4   alu erta = d ,ccs.              SetupMatch_A(temp, Mtcr2_Ctcr1_eq, match_low);
+06DC 4AF5FE7F   chan opaca = low,         
+                    tbsa = mtcr2_ctcr1_eq         
+                    ,write_erta,clr_mrla         
+                    .                   
+
+                                                /* 设置flag */
+                                                flag0 = FUEL_FLAG0_INACTIVE;
+06E0 FF39FCFB   chan mtd = enable_mtsr;         
+                    Set flag0.          
+06E4                                            flag1 = FUEL_FLAG1_RAIL;
+06E4 CFFAFD04   ram PRAM16 = #0(8) ;            flag1Mirror = FUEL_FLAG1_RAIL;
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 34
+
+
+                    Clear flag1.         
+
+                                                EnableEventHandling();
+06E8 F73FFCFB   chan mtd = enable_mtsr;        }
+                    end.                
+000C 01 80        00 A06 P01 MD 0600  HSR 0     lsr 1  m1 0  m2 0  pin 0  flag1 x  flag0 x                             
+000E 01 80        00 A07 P01 MD 0600  HSR 0     lsr 1  m1 0  m2 0  pin 1  flag1 x  flag0 x                             
+000A 01 80        00 A05 P01 MD 0600  HSR 6/7   lsr x  m1 x  m2 x  pin x  flag1 x  flag0 x                             
+                                         
+0000             Thread Local RAM size                                   
+                                            /* 产生轨压中断的线程，角度应为预喷2起始角度提前railPressAngle */
+                                            else if (m1 == 1 && m2 == 0 && flag0 == FUEL_FLAG0_INACTIVE && flag1 == FUEL_FLAG1_RAIL)
+                                            {
+00BA                                            unsigned int24 temp;
+
+                                                /* 更新凸轮标记齿角度 */
+                                                if (gCamState >= CAM_MARK_VERIFIED)
+        if (gCamState >= CAM_MARK_VERIFIED) 
+                     ^
+Error ILLEGAL OR UNDEFINED ARGUMENT gCamState
+                                                {
+                                                    edgeAngle = gCamEdgeAngle;
+                                        
+                                                    edgeAngleBack = edgeAngle;
+            edgeAngle = gCamEdgeAngle;
+                                       ^
+Error EXPECTED  )
+06EC 3BF9FFF4   alu nil = a ,ccs.       
+06F0 F0C837CD   if z==1 jump 06F8,flush;                            edgeAngle = gCamEdgeAngle;
+                    ram p23_0 = PRAM21.         
+06F4 BFFFFB86   ram PRAM25 = p23_0.         
+06F8 6FFFFFFF   end.                            }
+0012 41 BB        00 A09 P01 ME 06EC  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 0  flag0 1                             
+001A 41 BB        00 A0D P01 ME 06EC  HSR 0     lsr x  m1 1  m2 0  pin 1  flag1 0  flag0 1                             
+                                         
+0000             Thread Local RAM size                                   
+                                                else
+                                                {
+06FC BFEFFB86   ram p23_0 = PRAM25.                 edgeAngle = edgeAngleBack;
+0700 AFFFFB85   ram PRAM21 = p23_0,end.            }
+0008 C1 BF        00 A04 P23 ME 06FC  HSR 1/4/5 lsr x  m1 x  m2 x  pin x  flag1 x  flag0 x                             
+0010 C1 BF        00 A08 P23 ME 06FC  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 0  flag0 0                             
+0014 C1 BF        00 A0A P23 ME 06FC  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 1  flag0 0                             
+0016 C1 BF        00 A0B P23 ME 06FC  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 1  flag0 1                             
+0018 C1 BF        00 A0C P23 ME 06FC  HSR 0     lsr x  m1 1  m2 0  pin 1  flag1 0  flag0 0                             
+001C C1 BF        00 A0E P23 ME 06FC  HSR 0     lsr x  m1 1  m2 0  pin 1  flag1 1  flag0 0                             
+001E C1 BF        00 A0F P23 ME 06FC  HSR 0     lsr x  m1 1  m2 0  pin 1  flag1 1  flag0 1                             
+0020 C1 BF        00 A10 P23 ME 06FC  HSR 0     lsr x  m1 0  m2 1  pin 0  flag1 0  flag0 0                             
+0022 C1 BF        00 A11 P23 ME 06FC  HSR 0     lsr x  m1 0  m2 1  pin 0  flag1 0  flag0 1                             
+0024 C1 BF        00 A12 P23 ME 06FC  HSR 0     lsr x  m1 0  m2 1  pin 0  flag1 1  flag0 0                             
+0026 C1 BF        00 A13 P23 ME 06FC  HSR 0     lsr x  m1 0  m2 1  pin 0  flag1 1  flag0 1                             
+0028 C1 BF        00 A14 P23 ME 06FC  HSR 0     lsr x  m1 0  m2 1  pin 1  flag1 0  flag0 0                             
+002A C1 BF        00 A15 P23 ME 06FC  HSR 0     lsr x  m1 0  m2 1  pin 1  flag1 0  flag0 1                             
+002C C1 BF        00 A16 P23 ME 06FC  HSR 0     lsr x  m1 0  m2 1  pin 1  flag1 1  flag0 0                             
+002E C1 BF        00 A17 P23 ME 06FC  HSR 0     lsr x  m1 0  m2 1  pin 1  flag1 1  flag0 1                             
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 35
+
+
+0030 C1 BF        00 A18 P23 ME 06FC  HSR 0     lsr x  m1 1  m2 1  pin 0  flag1 0  flag0 0                             
+0032 C1 BF        00 A19 P23 ME 06FC  HSR 0     lsr x  m1 1  m2 1  pin 0  flag1 0  flag0 1                             
+0034 C1 BF        00 A1A P23 ME 06FC  HSR 0     lsr x  m1 1  m2 1  pin 0  flag1 1  flag0 0                             
+0036 C1 BF        00 A1B P23 ME 06FC  HSR 0     lsr x  m1 1  m2 1  pin 0  flag1 1  flag0 1                             
+0038 C1 BF        00 A1C P23 ME 06FC  HSR 0     lsr x  m1 1  m2 1  pin 1  flag1 0  flag0 0                             
+003A C1 BF        00 A1D P23 ME 06FC  HSR 0     lsr x  m1 1  m2 1  pin 1  flag1 0  flag0 1                             
+003C C1 BF        00 A1E P23 ME 06FC  HSR 0     lsr x  m1 1  m2 1  pin 1  flag1 1  flag0 0                             
+003E C1 BF        00 A1F P23 ME 06FC  HSR 0     lsr x  m1 1  m2 1  pin 1  flag1 1  flag0 1                             
+                                         
+0000             Thread Local RAM size                                   
+0000             Local RAM requirements for eTPU Function FuelMain                                   
+
+                                                /* 计算预喷2的起始角度 */
+                                                temp = edgeAngle - tempInjArr[0] + angleOffset;
+     temp = edgeAngle - tempInjArr[0] + angleOffset; 
+         ^
+Error ILLEGAL OR UNDEFINED ARGUMENT temp
+                                                temp = restrictAngle(temp, angleTickPerEngCycle);
+     temp = restrictAngle(temp, angleTickPerEngCycle); 
+         ^
+Error ILLEGAL OR UNDEFINED ARGUMENT temp
+                                                
+                                                /* 根据预喷2的持续时间决定角度匹配后的输出行为 */
+                                                if (tempInjArr[1] == 0)
+     if (tempInjArr[1] == 0) 
+                   ^
+Error EXPECTED  " hsr,lsr,m1,m2,pin,flag0,flag1 " found tempInjArr
+     if (tempInjArr[1] == 0) 
+                    ^
+Error EXPECTED  )
+     if (tempInjArr[1] == 0) 
+                     ^
+Error EXPECTED  " hsr,lsr,m1,m2,pin,flag0,flag1 " found 1
+     if (tempInjArr[1] == 0) 
+                      ^
+Error EXPECTED  )
+     if (tempInjArr[1] == 0) 
+                         ^
+Error EXPECTED  " hsr,lsr,m1,m2,pin,flag0,flag1 " found ==
+     if (tempInjArr[1] == 0) 
+                           ^
+Error EXPECTED  )
+     if (tempInjArr[1] == 0) 
+                           ^
+Error EXPECTED  " hsr,lsr,m1,m2,pin,flag0,flag1 " found 0
+                                                {
+                                                    SetupMatch_A(temp, Mtcr2_Ctcr1_eq, match_low);
+erta = temp; act_unitA = Mtcr2_Ctcr1_eq; opacA = match_low; EnableMatchA(); ClearMatchALatch(); EnableEventHandling();; 
+           ^
+Error ILLEGAL OR UNDEFINED ARGUMENT temp
+0704 3BF92FF4   alu erta = a ,ccs.         
+0708 4AF5FE7F   chan opaca = low,         
+                    tbsa = mtcr2_ctcr1_eq         
+                    ,write_erta,clr_mrla         
+                    .                   
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 36
+
+
+070C F73FFCFB   chan mtd = enable_mtsr;            }
+                    end.                
+000C 41 C1                              
+    	if (tempInjArr[1] == 0)
+       ^
+Error OVERWRITING PREVIOUS ADDRESS CONTENTS 000C Conflict in entry function condition (6)
+       00 A06 P01 ME 0704  HSR 0     lsr 1  m1 0  m2 0  pin 0  flag1 x  flag0 x                                        
+000E 41 C1                              
+    	if (tempInjArr[1] == 0)
+       ^
+Error OVERWRITING PREVIOUS ADDRESS CONTENTS 000E Conflict in entry function condition (7)
+       00 A07 P01 ME 0704  HSR 0     lsr 1  m1 0  m2 0  pin 1  flag1 x  flag0 x                                        
+0010 41 C1                              
+    	if (tempInjArr[1] == 0)
+       ^
+Error OVERWRITING PREVIOUS ADDRESS CONTENTS 0010 Conflict in entry function condition (8)
+       00 A08 P01 ME 0704  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 0  flag0 0                                        
+0012 41 C1                              
+    	if (tempInjArr[1] == 0)
+       ^
+Error OVERWRITING PREVIOUS ADDRESS CONTENTS 0012 Conflict in entry function condition (9)
+       00 A09 P01 ME 0704  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 0  flag0 1                                        
+0014 41 C1                              
+    	if (tempInjArr[1] == 0)
+       ^
+Error OVERWRITING PREVIOUS ADDRESS CONTENTS 0014 Conflict in entry function condition (10)
+       00 A0A P01 ME 0704  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 1  flag0 0                                        
+0016 41 C1                              
+    	if (tempInjArr[1] == 0)
+       ^
+Error OVERWRITING PREVIOUS ADDRESS CONTENTS 0016 Conflict in entry function condition (11)
+       00 A0B P01 ME 0704  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 1  flag0 1                                        
+0018 41 C1                              
+    	if (tempInjArr[1] == 0)
+       ^
+Error OVERWRITING PREVIOUS ADDRESS CONTENTS 0018 Conflict in entry function condition (12)
+       00 A0C P01 ME 0704  HSR 0     lsr x  m1 1  m2 0  pin 1  flag1 0  flag0 0                                        
+001A 41 C1                              
+Error LOOP NESTING MISMATCH
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 37
+
+
+
+
+SYMBOL TABLE
+
+LABEL                             VALUE LABEL                             VALUE 
+
+AnyTrans                         0003 | CC                               0000 
+Capture_tcr1                     0000 | Capture_tcr2                     0002 
+FALSE                            0000 | FUEL_FLAG0_ACTIVE                0000 
+FUEL_FLAG0_INACTIVE              0001 | FUEL_FLAG1_NORMAL                0001 
+FUEL_FLAG1_RAIL                  0000 | FUEL_INIT                        0007 
+FUEL_INJ_TIME_UPDATE             0003 | FuelMain                         0300 
+HighLow                          0002 | LowHigh                          0001 
+Mtcr1_Ctcr1_eq                   0004 | Mtcr1_Ctcr1_ge                   0000 
+Mtcr1_Ctcr2_eq                   0006 | Mtcr1_Ctcr2_ge                   0002 
+Mtcr2_Ctcr1_eq                   0005 | Mtcr2_Ctcr1_ge                   0001 
+Mtcr2_Ctcr2_eq                   0007 | Mtcr2_Ctcr2_ge                   0003 
+NoChange                         0000 | NoDetect                         0000 
+PerPacA                          0000 | PerPacB                          0001 
+PinHigh                          0001 | PinLow                           0002 
+PinToggle                        0003 | SetHigh                          0002 
+SetLow                           0004 | TRUE                             0001 
+angleOffset                      0001 | angleTickPerEngCycle             0011 
+any_trans                        0003 | bm_dt                            0007 
+bm_st                            0006 | chan                             0000 
+chan_base                        0000 | channel                          0000 
+detect_input_0_on_match          0004 | detect_input_1_on_match          0005 
+disable_output_buffer            0009 | do_nothing                       000F 
+edgeAngle                        0015 | edgeAngleBack                    0019 
+em_b_dt                          0001 | em_b_st                          0000 
+em_nb_dt                         0003 | em_nb_st                         0002 
+enableChn                        0004 | enable_output_buffer             0008 
+erta                             0000 | ertb                             0000 
+exprEdgeAngle                    000D | flag1Mirror                      0010 
+flagPulse                        000C | force_pin_high                   0002 
+force_pin_low                    0004 | high_low                         0002 
+injChangeTime                    001D | injTimes                         0008 
+judgeFuture                      025C | link                             0000 
+low_high                         0001 | m2_dt                            0005 
+m2_o_dt                          0009 | m2_o_st                          0008 
+m2_st                            0004 | match_high                       0001 
+match_low                        0002 | match_no_change                  0000 
+match_toggle                     0003 | no_change_ipac                   0007 
+no_detect                        0000 | opac_high                        0001 
+opac_high_low                    0004 | opac_low                         0002 
+opac_low_high                    0005 | pInjTimeArr                      0005 
+pin_high                         0002 | pin_low                          0004 
+pin_opacA                        0000 | pin_opacB                        0001 
+railPressAngle                   0009 | railPressChn                     0000 
+restrictAngle                    0200 | set_pin_per_opacA                0000 
+set_pin_per_opacB                0001 | sm_dt                            000D 
+sm_st                            000C | sm_st_e                          000E 
+tcr1                             0000 | tcr2                             0000 
+tempInjArr                       0021 | toggle                           0003 
+tpr                              0000 | tpr_struct                       0004 
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 38
+
+
+
+
+SYMBOL TABLE - Continued
+
+LABEL                            VALUE  LABEL                            VALUE  
+
+
+transition_high                  0005 | transition_low                   0004 
+transition_toggle                0006 | trr                              0000 
+
+
+
+RAM USAGE MAP 
+
+0000     CC                               cc_reg              
+0009     temp                             unsigned int24      0200  025B
+0000     temp                             unsigned char       025C  02FF
+reg_d    temp                             unsigned int24      0300  043F
+reg_d    temp                             unsigned int24      0444  05FB
+reg_d    temp                             unsigned int24      0600  06E7
+reg_d    temp                             unsigned int24      06EC  06F7
+
+
+RAM MEMORY DECLARATIONS
+
+RAM                                   [4001] @ 0000  0000 :: 4000 Used 0000 to 0017 (   24) 0018
+
+
+
+ROM USAGE MAP 
+
+    0000 to 003F    0200 to 070F
+    Total ROM used 0550 (1360)
+
+
+eTPU FUNCTION SUMMARY 
+
+  0                          FuelMain  0704  0704  (     0 words)  SRAM =    0  Local RAM =    0
+
+
+Errors             :   21
+Warnings           :    0
+
+

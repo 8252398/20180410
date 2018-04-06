@@ -1,0 +1,546 @@
+/*------------------------------------------------------------------------
+   版权 2017-2027 中国航空工业集团第六三一所第十八研究室
+   
+   对本文件的拷贝、发布、修改或者其他任何用途必须得到
+   中国航空工业集团第六三一所的书面协议许可
+   
+   File : DSPI.c
+   
+   Description : DSPI驱动
+   
+   
+   Revision History:
+   rev.0.01 2017-11-13,马振华,创建
+------------------------------------------------------------------------*/
+#include "mpc5644a.h"  
+#include "typedefs.h"  
+#include "dspi.h" 
+
+vuint32_t DSPITX1[3][4]={{0x8001c000,0x00010000},{0x80010100,0x00010000},
+						{0x8001c300,0x00010055,0x8001c300,0x000100aa}
+					   };
+vuint32_t DSPITX2[12][4]={{0x80011800,0x00010000},{0x8001d800,0x00010000},
+					   {0x80011000,0x00010000},{0x80011100,0x00010000},
+					   {0x80011200,0x00010000},{0x80011300,0x00010000},
+					   {0x80011400,0x00010000},{0x80011500,0x00010000},
+					   {0x8001ca00,0x00010018},
+					   {0x8001c500,0x8001335b,0x80010338,0x00010038},
+					   {0x8001c000,0x00010000},{0x80010100,0x00010000},
+					   };
+vuint32_t DSPITX3[2][2] ={{0x8001c000,0x00010000},{0x80010100,0x00010000}};
+vuint32_t DSPITX4[1][4] ={0x80012e00,0x0001dcdc,0x80012f00,0x0001dcdc};
+vuint32_t DSPIRX[4];
+vuint32_t dspi_group = 0;//dspi 发送的组数
+
+vuint32_t dspi_txnum = 0;//dspi 发送循环的次数 
+
+vuint32_t dspiTstRe = 0; /* dspi测试结果 */
+
+/************************************************************************
+* @brief 
+* 		dspiBInit	DSPI_B初始化
+* @param[in]  无
+* @param[out] 无		  
+* @return     无
+************************************************************************/
+void dspiBInit(void) 
+{
+	/* 设置配置选项：主机，SPI模式，非连续SCK，PSCx=0,dspi使能，发送、接收FIFO缓存使能  */
+	//DSPI_B.MCR.R = 0x813F0001; 
+	                                  /* bit0: 1-DSPI is in master mode 
+	                                  bit2-3: 0-master mode
+	                                  bit6(PCSSE):0 DSPI_x_PCS[5]/PCSS is used as the Peripheral Chip Select[5] signal
+	                                  bit7: 1-Incoming data is shifted in to the shift register（If the RX FIFO is full 
+	                                        and new data is received, the data from the transfer,generated the overflow, 
+	                                        is ignored or shifted in to the shift register.）
+	                                  bit8-15: 非活跃状态PCSIS0~5 is high,PCSIS6~7 is low
+	                                  bit17: 0-Enable DSPI clocks
+	                                  bit18: 0 TX FIFO is enabled （1 to 16 words）
+	                                  bit19: 0 RX FIFO is enabled
+	                                  bit22-23: 00 DSPI samples SIN at driving SCK edge.
+	                                  bit30: 00-DSPI samples SIN at driving SCK edgewhen a parity error detected in received SPI frame.
+	                                  bit31: HALT(The HALT bit starts and stops DSPI transfers)=1-1 Stop transfers*/ 
+    //DSPI_B.CTAR[0].R = 0x79000024; /* 燃油芯片 */
+    //DSPI_B.CTAR[1].R = 0x79000024; /* 电源芯片 */
+    //DSPI_B.CTAR[4].R = 0x79000024; /* 备用 */
+	DSPI_B.MCR.B.MSTR = 1;            //DSPI is in master mode
+	DSPI_B.MCR.B.CONT_SCKE = 0;       //Continuous SCK enabled
+	DSPI_B.MCR.B.DCONF = 0;           //DSPI configuration set to SPI mode
+	DSPI_B.MCR.B.FRZ = 0;             // Do not halt serial transfers
+	DSPI_B.MCR.B.MTFE = 0;            //Modified SPI transfer format disabled   
+	DSPI_B.MCR.B.PCSSE = 0;           /* 0 DSPI_x_PCS[5]/PCSS is used as the Peripheral Chip Select[5] signal */ 
+	DSPI_B.MCR.B.ROOE = 0;            //Receive FIFO overflow overwrite disable
+	DSPI_B.MCR.B.PCSIS7 = 0;          //The inactive state of PCSn is low
+	DSPI_B.MCR.B.PCSIS6 = 0;          //The inactive state of PCSn is low
+	DSPI_B.MCR.B.PCSIS5 = 0;          //The inactive state of PCSn is low
+	DSPI_B.MCR.B.PCSIS4 = 0;          /* 备用 */
+	DSPI_B.MCR.B.PCSIS3 = 0;
+	DSPI_B.MCR.B.PCSIS2 = 0;         
+	DSPI_B.MCR.B.PCSIS1 = 1;          /* 电源芯片片选 1 The inactive state of PCSx is high */
+	DSPI_B.MCR.B.PCSIS0 = 1;          /* 燃油芯片片选 The inactive state of PCSn is low */
+	DSPI_B.MCR.B.MDIS = 0;            //Enable DSPI clocks
+	DSPI_B.MCR.B.DIS_TXF = 0;         //TX FIFO is enabled
+	DSPI_B.MCR.B.DIS_RXF = 0;         //RX FIFO is enabled
+	DSPI_B.MCR.B.CLR_TXF = 1;         //Clear the TX FIFO counter
+	DSPI_B.MCR.B.CLR_RXF = 1;         //Clear the RX FIFO counter
+	DSPI_B.MCR.B.SMPL_PT = 1;         //01 DSPI samples SIN one system clock after driving SCK edge
+	DSPI_B.MCR.B.PES = 0;             // SPI frames transmission continue when a parity error detected in received SPI frame.
+	DSPI_B.MCR.B.HALT = 1;            // Stop transfers
+	
+	/* 时钟与传输属性设置 */
+	DSPI_B.CTAR[0].B.DBR = 0; // 0 The baud rate is computed normally with a 50/50 duty cycle
+	DSPI_B.CTAR[0].B.FMSZ = 0xF;      //per frame transfer 16 bits
+	DSPI_B.CTAR[0].B.CPOL = 0;        //The inactive state value of SCK is low
+	DSPI_B.CTAR[0].B.CPHA = 0;        //Data is captured on the leading edge of SCK and changed on the following edge
+	DSPI_B.CTAR[0].B.LSBFE = 0;       //Data is transferred MSB first
+	DSPI_B.CTAR[0].B.PCSSCK = 3;      //PCS to SCK Delay  Prescaler Value set to 7
+	DSPI_B.CTAR[0].B.PASC = 0;        //After SCK delay prescaler delay value is 7
+	DSPI_B.CTAR[0].B.PDT = 0;         //Delay after transfer prescale delay value is 7
+	DSPI_B.CTAR[0].B.PBR = 1;         //Baud Rate Prescaler Value set to 7
+	DSPI_B.CTAR[0].B.CSSCK = 1;       //PCS to SCK delay scaler value is 4
+	DSPI_B.CTAR[0].B.ASC = 6;         //After SCK delay scaler value is 32
+	DSPI_B.CTAR[0].B.DT = 6;          //Delay after transfer scaler value is 32
+	DSPI_B.CTAR[0].B.BR = 4;          //Baud rate scaler value is 6
+	
+	/* 电源芯片时钟与传输属性设置 */
+	DSPI_B.CTAR[1].B.DBR = 0; // 0 The baud rate is computed normally with a 50/50 duty cycle
+	DSPI_B.CTAR[1].B.FMSZ = 0xF;      //per frame transfer 16 bits
+	DSPI_B.CTAR[1].B.CPOL = 0;        //The inactive state value of SCK is low
+	DSPI_B.CTAR[1].B.CPHA = 0;        //Data is captured on the leading edge of SCK and changed on the following edge
+	DSPI_B.CTAR[1].B.LSBFE = 0;       //Data is transferred MSB first
+	DSPI_B.CTAR[1].B.PCSSCK = 3;      //PCS to SCK Delay  Prescaler Value set to 7
+	DSPI_B.CTAR[1].B.PASC = 0;        //After SCK delay prescaler delay value is 7
+	DSPI_B.CTAR[1].B.PDT = 0;         //Delay after transfer prescale delay value is 7
+	DSPI_B.CTAR[1].B.PBR = 1;         //Baud Rate Prescaler Value set to 7
+	DSPI_B.CTAR[1].B.CSSCK = 1;       //PCS to SCK delay scaler value is 4
+	DSPI_B.CTAR[1].B.ASC = 6;         //After SCK delay scaler value is 32
+	DSPI_B.CTAR[1].B.DT = 6;          //Delay after transfer scaler value is 32
+	DSPI_B.CTAR[1].B.BR = 4;          //Baud rate scaler value is 6
+	
+	/* 备用片选时钟与传输属性设置 */
+	DSPI_B.CTAR[1].B.DBR = 0; // 0 The baud rate is computed normally with a 50/50 duty cycle
+	DSPI_B.CTAR[4].B.FMSZ = 0xF;      //per frame transfer 16 bits
+	DSPI_B.CTAR[4].B.CPOL = 0;        //The inactive state value of SCK is low
+	DSPI_B.CTAR[4].B.CPHA = 0;        //Data is captured on the leading edge of SCK and changed on the following edge
+	DSPI_B.CTAR[4].B.LSBFE = 0;       //Data is transferred MSB first
+	DSPI_B.CTAR[4].B.PCSSCK = 3;      //PCS to SCK Delay  Prescaler Value set to 7
+	DSPI_B.CTAR[4].B.PASC = 0;        //After SCK delay prescaler delay value is 7
+	DSPI_B.CTAR[4].B.PDT = 0;         //Delay after transfer prescale delay value is 7
+	DSPI_B.CTAR[4].B.PBR = 1;         //Baud Rate Prescaler Value set to 7
+	DSPI_B.CTAR[4].B.CSSCK = 1;       //PCS to SCK delay scaler value is 4
+	DSPI_B.CTAR[4].B.ASC = 6;         //After SCK delay scaler value is 32
+	DSPI_B.CTAR[4].B.DT = 6;          //Delay after transfer scaler value is 32
+	DSPI_B.CTAR[4].B.BR = 4;          //Baud rate scaler value is 6	
+    
+    
+    /*为DSPI配置合适的引脚*/ 
+    SIU.PCR[102].R = 0x060f;        /* 使能为DSPI_B_SCK  PA=1，OBE=1，WPE=WPS=1 */
+    SIU.PCR[103].R = 0x0403;        /* 使能为DSPI_B_SIN  PA=1，WPE=WPS=1 */
+    SIU.PCR[104].R = 0x0400;        /* 使能为DSPI_B_SOUT  PA=1 */
+    SIU.PCR[105].R = 0x060C;        /* 使能为DSPI_B_PCS[0] PA=1，SRC=3 燃油芯片片选   */
+    SIU.PCR[106].R = 0x040c;        /* 使能为DSPI_B_PCS[1] PA=1，SRC=3 电源芯片片选 */ 
+    //SIU.PCR[107].R = 0x0500;      /* 使能为DSPI_B_PCS[2] PA=1，SRC=3 0xC0C ECU使用该片选 */
+    SIU.PCR[109].R = 0x040c;        /* 使能为DSPI_B_PCS[4] PA=1，SRC=3 备用*/
+    //SIU.DISR.R = 0; /* 为DPSI_B、DPSI_C、DPSI_D选择SINA和SCKA */
+    
+    #if 0
+    SIU.PCR[102].R = 0x0700;        /* 使能为DSPI_B_SCK  PA=1，OBE=1，IBE=1  0x60f */
+    SIU.PCR[103].R = 0x0500;        /* 使能为DSPI_B_SIN  PA=1，OBE=0，IBE=1 0x403 */
+    SIU.PCR[104].R = 0x0500;        /* 使能为DSPI_B_SOUT  PA=1，IBE=1 0x400 */
+    SIU.PCR[105].R = 0x0500;        /* 使能为DSPI_B_PCS[0] PA=1，IBE=1 燃油芯片片选  0x203 */
+    SIU.PCR[106].R = 0x0500;        /* 使能为DSPI_B_PCS[1] PA=1，IBE=1 电源芯片片选 */ 
+    //SIU.PCR[107].R = 0x0500;      /* 使能为DSPI_B_PCS[2] PA=1，IBE=1 0xC0C ECU使用该片选 */
+    SIU.PCR[109].R = 0x0500;        /* 使能为DSPI_B_PCS[4] PA=1，IBE=1 备用*/
+    //SIU.DISR.R = 0; /* 为DPSI_B、DPSI_C、DPSI_D选择SINA和SCKA */
+    #endif
+}
+
+/************************************************************************
+* @brief 
+* 		dspiDataSend	DSPI数据发送
+* @param[in]  dataBuf:发送缓冲区地址
+*			  len:发送数据个数
+* @param[out] 无		  
+* @return     0-发送成功，-1-发送失败，发送缓冲区非空
+************************************************************************/
+int32_t dspiDataSend(uint32_t *dataBuf, uint32_t len)
+{
+    uint32_t i = 0, timeOut = 0;
+    int32_t result = 0;
+    
+	while(i < len)
+	{
+		while(DSPI_B.SR.B.TFFF == 0 && timeOut < 0xFFFF) /* 等待发送FIFO非满,  1 TX FIFO is not full*/
+		{
+			timeOut++;
+		}
+		
+		if (DSPI_B.SR.B.TFFF == 0 && timeOut == 0xFFFF) /* 发送缓冲区一直非空 返回故障标志-1 */
+		{		
+			result = -1;
+			return result; 
+		}
+		else /* 将数据填入发送缓冲区 */
+		{
+			DSPI_B.PUSHR.R = dataBuf[i];
+		}
+		
+	    i++;
+	}
+	
+	DSPI_B.MCR.B.HALT = 0; /* 启动传输  */
+	result = 0;
+	return result; 
+}
+
+/************************************************************************
+* @brief 
+* 		dspiBDataRecv	DSPI数据接收
+* @param[in]  dataBuf:接收缓冲区地址
+* @param[out] 无		  
+* @return     接收数据个数
+************************************************************************/
+int32_t dspiBDataRecv(uint32_t *dataBuf)
+{
+    uint32_t i = 0; 
+    
+    while (DSPI_B.SR.B.RFDF == 1) /* 检查接收FIFO是否为空 （RFDF=1， RX FIFO is not empty）*/
+    {
+    	dataBuf[i] = DSPI_B.POPR.B.RXDATA; /* Read data received by slave SPI */
+    	i++;
+    }
+    //DSPI_B.SR.R = 0x80020000; /* Clear TCF, RDRF flags by writing 1 to them */
+    return i;
+}
+
+/**********************DSPI数据发送和接收*********/
+void dspiBTxRv(vuint32_t * TXDATAs,vuint32_t* RXDATAs,vuint32_t count)
+{ 
+	vuint32_t i = 0;
+	vuint32_t TMP = 0;
+	
+	/* 清空发送接收FIFO */
+	DSPI_B.MCR.B.CLR_TXF = 1;/*  Clear the TX FIFO counter */
+	DSPI_B.MCR.B.CLR_RXF = 1; /*  Clear the RX FIFO counter */
+        
+	while(i < count)
+	{
+		DSPI_B.PUSHR.R = TXDATAs[i];
+	    i++;
+	}
+	DSPI_B.MCR.B.HALT = 0;/* Start transfers */
+
+	/* 等待接收完响应数据 */
+	while(DSPI_B.SR.B.RXCTR != count)
+	{
+		;
+	} 
+	
+	i = 0;
+	while(i < count)
+	{
+	    RXDATAs[i] = DSPI_B.POPR.R;
+	    TMP = RXDATAs[i];
+		i++;
+	}
+
+	DSPI_B.SR.B.RFDF = 1; /*写1清除此位，即表示接收FIFO为空。0  RX FIFO is empty   1  RX FIFO is not empty */
+}
+
+void delayCnt (vuint32_t tCount)
+{
+	vuint32_t outC, inC;
+	for(outC=0; outC<tCount; outC++)
+	{
+		for(inC=0; inC<tCount; inC++)
+		{
+		}
+	}	
+}
+void dspi_init (void)
+{
+	vuint32_t i = 0;
+	vuint32_t j = 0;
+	vuint32_t TXDATA[4] = {0};
+	vuint32_t RXDATA[4] = {0},ret = 0,ret1 = 0,ret2 = 0;
+	vuint32_t count = 0;
+	
+	/* DSPI寄存器设置 */ 
+	dspiBInit(); 
+	DSPI_B.MCR.B.CLR_TXF = 1;/*  Clear the TX FIFO counter */
+	DSPI_B.MCR.B.CLR_RXF = 1; /*  Clear the RX FIFO counter */
+	
+	/* 上电初始化序列 */
+	TXDATA[0] = 0x80014200;
+	//TXDATA[1] = 0x08010081; /* 欧四仅发送0x4200 */
+	count = 0x1;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001c300;
+	TXDATA[1] = 0x08010055;
+	count = 0x2;
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001c300;
+	TXDATA[1] = 0x080100aa;
+	count = 0x2;
+	dspiBTxRv(TXDATA,RXDATA,count);
+	delayCnt(195);
+    /* 燃油芯片dspi通信测试 */
+	if (RXDATA[0] == 0x303F && RXDATA[1] == 0x00AA)
+	{
+	    dspiTstRe = 1; /* 测试合格 */    
+	}
+	else
+	{
+	    dspiTstRe = 0; /* 测试不合格 */       
+	}
+	i = 0; 
+	
+	TXDATA[0] = 0x80010200;
+	TXDATA[1] = 0x0001DCDC;
+	count = 0x2;
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001c200;
+	TXDATA[1] = 0x00010081;
+	count = 0x2;
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	/* 功能初始化序列，第一块（寄存器/参数设置） */
+	i = 0;
+	TXDATA[0] = 0x8001c000;
+	TXDATA[1] = 0x00010000;
+	
+	count = 0x2;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	 	 
+	TXDATA[0] = 0x8001c500;
+	TXDATA[1] = 0x80010093; //00b8
+	TXDATA[2] = 0x8001008f; //0072
+	TXDATA[3] = 0x00010093; //00b8
+	count = 0x4;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001ca00;
+	TXDATA[1] = 0x000100c1;
+	count = 0x2;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001ce00;
+	TXDATA[1] = 0x8001975f;
+	TXDATA[2] = 0x00019708;
+	count = 0x3;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001e400;
+	TXDATA[1] = 0x00012040;
+	count = 0x2;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001e600;
+	TXDATA[1] = 0x00010008;
+	count = 0x2;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001e800;
+	TXDATA[1] = 0x80010020;
+	TXDATA[2] = 0x80012498;
+	TXDATA[3] = 0x000100ff;
+	count = 0x4;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001eb00;
+	TXDATA[1] = 0x8001a285;
+	TXDATA[2] = 0x0001063a; //0632
+	count = 0x3;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	//a5b20
+	TXDATA[0] = 0x8001fc00;
+	TXDATA[1] = 0x80011e59; //1f7a
+	TXDATA[2] = 0x000120a4; //1a65
+	count = 0x3;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001ca00;
+	TXDATA[1] = 0x00010018;
+	count = 0x2;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001c000;
+	TXDATA[1] = 0x00010000;
+	count = 0x2;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	delayCnt(24);
+	
+	/* 样机中无此次喂狗 */
+	TXDATA[0] = 0x8001c300;
+	TXDATA[1] = 0x00010055; 
+	count = 0x2;
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x8001c300;
+	TXDATA[1] = 0x000100aa;
+	count = 0x2;
+	dspiBTxRv(TXDATA,RXDATA,count);
+	delayCnt(200);
+
+    /* 第二块（参数设置） */
+	//数据来源a4520
+	TXDATA[0] = 0x8001f200;
+	TXDATA[1] = 0x8001003d; //003d
+	TXDATA[2] = 0x800104d2; //04d2
+	TXDATA[3] = 0x00010040; //0040
+	count = 0x4;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	//数据来源a4520
+	TXDATA[0] = 0x8001f500;
+	TXDATA[1] = 0x80010512; //0512
+	TXDATA[2] = 0x80010f0f; //0f0f
+	TXDATA[3] = 0x00010404; //0404
+	count = 0x4;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	//数据来源a4520
+	TXDATA[0] = 0x8001f800;
+	TXDATA[1] = 0x800100a0;
+	TXDATA[2] = 0x800100a0;
+	TXDATA[3] = 0x000100de;
+	count = 0x4;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	//数据来源a4520
+	TXDATA[0] = 0x8001fb00;
+	TXDATA[1] = 0x00010457;
+	count = 0x2;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	delayCnt(200);
+	
+	/* 缺失第三块（喂狗），仅一次 */
+	
+	/* 第四块（增压电压设置） */
+	TXDATA[0] = 0x8001ca00;
+	TXDATA[1] = 0x00010018;
+	count = 0x2;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	delayCnt(216);
+	
+	/* 以下为样机中正常工作序列第一块（C000-0100组合体） */
+	TXDATA[0] = 0x8001c000;
+	TXDATA[1] = 0x00010000;
+	count = 0x2;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+	
+	TXDATA[0] = 0x80010100;
+	TXDATA[1] = 0x00010000;
+	count = 0x2;	   
+	dspiBTxRv(TXDATA,RXDATA,count);
+//	delayCnt(195);
+	//以上程序50v启动
+	
+}
+
+void dspiPeriodTask(void)
+{
+    uint32_t count = 0;
+    static vuint32_t ret=0,ret1 = 0,ret2 = 0;
+    
+    if(dspi_group ==0) /* 正常工作序列第二块（C000-0100组合体加喂狗） */
+	{
+		dspi_group = 1;
+		dspi_txnum++;
+		
+		count = 0x2;	   
+		dspiBTxRv(DSPITX1[0],DSPIRX,count);
+		count = 0x2;	   
+		dspiBTxRv(DSPITX1[1],DSPIRX,count);
+		count = 0x4;	   
+		dspiBTxRv(DSPITX1[2],DSPIRX,count);
+		
+		
+	}
+	else if(dspi_group == 1) /* 第三块（故障查询及喷油参数刷新，后跟C000-0100组合体） */
+	{ 
+		dspi_group = 2;
+       
+		count = 0x2;	   
+		dspiBTxRv(DSPITX2[0],DSPIRX,count);
+		count = 0x2;	   
+		dspiBTxRv(DSPITX2[1],DSPIRX,count);
+		count = 0x2; /*  20180309马振华修改此处为2 */	   
+		dspiBTxRv(DSPITX2[2],DSPIRX,count);
+	//	CANATransmitMsg(1, 0x90, (uint8_t *)(&DSPIRX), 8);
+		//CANATransmitMsg(1, 0x91, (uint8_t *)(&DSPIRX[2]), 8);
+		count = 0x2;	   
+		dspiBTxRv(DSPITX2[3],DSPIRX,count);
+	//	CANATransmitMsg(1, 0x92, (uint8_t *)(&DSPIRX), 8);
+		count = 0x2;	   
+		dspiBTxRv(DSPITX2[4],DSPIRX,count);
+//		CANATransmitMsg(1, 0x93, (uint8_t *)(&DSPIRX), 8);
+		count = 0x2;	   
+		dspiBTxRv(DSPITX2[5],DSPIRX,count);
+//		CANATransmitMsg(1, 0x94, (uint8_t *)(&DSPIRX), 8);
+		count = 0x2;
+		dspiBTxRv(DSPITX2[6],DSPIRX,count);
+//		CANATransmitMsg(1, 0x95, (uint8_t *)(&DSPIRX), 8);
+		count = 0x2;	   
+		dspiBTxRv(DSPITX2[7],DSPIRX,count);
+//		CANATransmitMsg(1, 0x96, (uint8_t *)(&DSPIRX), 8);
+		count = 0x2;	   
+		dspiBTxRv(DSPITX2[8],DSPIRX,count);
+		count = 0x4;	   
+		dspiBTxRv(DSPITX2[9],DSPIRX,count);	//C500 335B 	
+		count = 0x2;	   
+		dspiBTxRv(DSPITX2[10],DSPIRX,count); //0338 0038
+		count = 0x2;	   
+		dspiBTxRv(DSPITX2[11],DSPIRX,count);   
+
+		
+	}
+	else if(dspi_group == 2) /* 第四块（又是一个C000-0100组合体） */
+	{
+		dspi_group = 3;
+	  
+		count = 0x2;	   
+		dspiBTxRv(DSPITX3[0],DSPIRX,count);
+		count = 0x2;	   
+		dspiBTxRv(DSPITX3[1],DSPIRX,count);
+	
+		
+	}
+	else if(dspi_group == 3) /* 第一块（C000-0100组合体）加附加序列 */ // if(dspi_group == 3)
+	{
+		dspi_group = 0;
+	
+		count = 0x2;	   
+		dspiBTxRv(DSPITX3[0],DSPIRX,count);
+		count = 0x2;	   
+		dspiBTxRv(DSPITX3[1],DSPIRX,count);
+		
+	/*	if((dspi_txnum > 12) && (((dspi_txnum - 13) % 3) == 0)&& (ret == 0))
+		{
+			count = 0x4;	   
+			dspiBTxRv(DSPITX4[0],DSPIRX,count);
+			ret1 = DSPIRX[1];
+			ret2 = DSPIRX[3]; 
+			ret = (ret2 << 0x10 | ret1) & 0x7fffffff;
+			
+		}*/
+		
+	}
+}
+
+/************************************************************************
+* @brief 
+* 		dspiTst	DSPI_B测试程序
+* @param[in]  无
+* @param[out] 无		  
+* @return     无
+************************************************************************/
+void dspiTst(void) 
+{
+    CANATransmitMsg(1, 0x80, (uint8_t *)(&dspiTstRe), 4);  
+    delay(5); /* 延迟5msCANB发送数据 */
+    CANBTransmitMsg(1, 0x80, (uint8_t *)(&dspiTstRe), 4);	
+}

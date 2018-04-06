@@ -1,0 +1,126 @@
+<!DOCTYPE Project SYSTEM "http://www.slickedit.com/dtd/vse/10.0/vpj.dtd">
+<Project
+	Version="10.0"
+	VendorName="SlickEdit"
+	WorkingDir=".">
+	<Config
+		Name="Release"
+		OutputFile=""
+		CompilerConfigName="Latest Version">
+		<Menu>
+			<Target
+				Name="Compile"
+				MenuCaption="&amp;Compile"
+				CaptureOutputWith="ProcessBuffer"
+				SaveOption="SaveCurrent"
+				RunFromDir="%rw">
+				<Exec/>
+			</Target>
+			<Target
+				Name="Build"
+				MenuCaption="&amp;Build"
+				CaptureOutputWith="ProcessBuffer"
+				SaveOption="SaveWorkspaceFiles"
+				RunFromDir="%rw">
+				<Exec/>
+			</Target>
+			<Target
+				Name="Rebuild"
+				MenuCaption="&amp;Rebuild"
+				CaptureOutputWith="ProcessBuffer"
+				SaveOption="SaveWorkspaceFiles"
+				RunFromDir="%rw">
+				<Exec/>
+			</Target>
+			<Target
+				Name="Debug"
+				MenuCaption="&amp;Debug"
+				SaveOption="SaveNone"
+				RunFromDir="%rw">
+				<Exec/>
+			</Target>
+			<Target
+				Name="Execute"
+				MenuCaption="E&amp;xecute"
+				SaveOption="SaveNone"
+				RunFromDir="%rw">
+				<Exec CmdLine='"demo_0206.exe"'/>
+			</Target>
+		</Menu>
+	</Config>
+	<Files>
+		<Folder
+			Name="Source Files"
+			Filters="*.c;*.C;*.cc;*.cpp;*.cp;*.cxx;*.prg;*.pas;*.dpr;*.asm;*.s;*.bas;*.java;*.cs;*.sc;*.e;*.cob;*.html;*.rc;*.tcl;*.py;*.pl">
+			<F N="src/__ppc_eabi_init.c"/>
+			<F N="src/EDMA.c"/>
+			<F N="src/eQADC.c"/>
+			<F N="src/etpu_eng_pos.c"/>
+			<F N="src/etpu_fin.c"/>
+			<F N="src/etpu_fuel.c"/>
+			<F N="src/etpu_pwm.c"/>
+			<F N="src/etpu_start.c"/>
+			<F N="src/etpu_toothgen.c"/>
+			<F N="src/etpu_util.c"/>
+			<F N="src/eTPUChCfg.c"/>
+			<F N="src/Exceptions.c"/>
+			<F N="src/flexCAN.c"/>
+			<F N="src/GPIO.c"/>
+			<F N="src/IntcInterrupts.c"/>
+			<F N="src/LQ_ADC.c"/>
+			<F N="src/LQ_LED.c"/>
+			<F N="src/LQ_UART.c"/>
+			<F N="src/main.c"/>
+			<F N="src/MPC55xx_init.c"/>
+			<F N="src/MPC55xx_init_debug.c"/>
+			<F N="src/MPC5644A_HWInit.c"/>
+			<F N="src/PIT.c"/>
+		</Folder>
+		<Folder
+			Name="Header Files"
+			Filters="*.h;*.H;*.hh;*.hpp;*.hxx;*.inc;*.sh;*.cpy;*.if">
+			<F N="src/edma.h"/>
+			<F N="src/eqadc.h"/>
+			<F N="src/etpu_cam_auto.h"/>
+			<F N="src/etpu_crank_auto.h"/>
+			<F N="src/etpu_eng_pos.h"/>
+			<F N="src/etpu_fin.h"/>
+			<F N="src/etpu_fin_auto.h"/>
+			<F N="src/etpu_fuel.h"/>
+			<F N="src/etpu_fuel_auto.h"/>
+			<F N="src/etpu_fuelenable_auto.h"/>
+			<F N="src/etpu_pwm.h"/>
+			<F N="src/etpu_pwm_auto.h"/>
+			<F N="src/etpu_rail_auto.h"/>
+			<F N="src/etpu_set.h"/>
+			<F N="src/etpu_start.h"/>
+			<F N="src/etpu_struct.h"/>
+			<F N="src/etpu_toothgen.h"/>
+			<F N="src/etpu_toothgen_auto.h"/>
+			<F N="src/etpu_util.h"/>
+			<F N="src/eTPUChCfg.h"/>
+			<F N="src/Exceptions.h"/>
+			<F N="src/flexCAN.h"/>
+			<F N="src/gpio.h"/>
+			<F N="src/includes.h"/>
+			<F N="src/IntcInterrupts.h"/>
+			<F N="src/LQ_ADC.h"/>
+			<F N="src/LQ_LED.h"/>
+			<F N="src/LQ_UART.h"/>
+			<F N="src/MPC5644A.h"/>
+			<F N="src/MPC5644A_HWInit.h"/>
+			<F N="src/MPC5644A_vars.h"/>
+			<F N="src/PIT.h"/>
+			<F N="src/typedefs.h"/>
+		</Folder>
+		<Folder
+			Name="Resource Files"
+			Filters="*.ico;*.cur;*.dlg"/>
+		<Folder
+			Name="Bitmaps"
+			Filters="*.bmp"/>
+		<Folder
+			Name="Other Files"
+			Filters=""/>
+	</Files>
+</Project>

@@ -1,0 +1,20 @@
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 344:21:ILLEGAL OR UNDEFINED ARGUMENT gCamState
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 346:39:EXPECTED  )
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 355:9:ILLEGAL OR UNDEFINED ARGUMENT temp
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 356:9:ILLEGAL OR UNDEFINED ARGUMENT temp
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:19:EXPECTED  " hsr,lsr,m1,m2,pin,flag0,flag1 " found tempInjArr
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:20:EXPECTED  )
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:21:EXPECTED  " hsr,lsr,m1,m2,pin,flag0,flag1 " found 1
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:22:EXPECTED  )
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:25:EXPECTED  " hsr,lsr,m1,m2,pin,flag0,flag1 " found ==
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:27:EXPECTED  )
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:27:EXPECTED  " hsr,lsr,m1,m2,pin,flag0,flag1 " found 0
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 361:11:ILLEGAL OR UNDEFINED ARGUMENT temp
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:7:OVERWRITING PREVIOUS ADDRESS CONTENTS 000C Conflict in entry function condition (6)
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:7:OVERWRITING PREVIOUS ADDRESS CONTENTS 000E Conflict in entry function condition (7)
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:7:OVERWRITING PREVIOUS ADDRESS CONTENTS 0010 Conflict in entry function condition (8)
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:7:OVERWRITING PREVIOUS ADDRESS CONTENTS 0012 Conflict in entry function condition (9)
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:7:OVERWRITING PREVIOUS ADDRESS CONTENTS 0014 Conflict in entry function condition (10)
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:7:OVERWRITING PREVIOUS ADDRESS CONTENTS 0016 Conflict in entry function condition (11)
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:7:OVERWRITING PREVIOUS ADDRESS CONTENTS 0018 Conflict in entry function condition (12)
+ERROR   D:\NewECU\ETPUTest\etpuc_fuel2.c 359:7:LOOP NESTING MISMATCH

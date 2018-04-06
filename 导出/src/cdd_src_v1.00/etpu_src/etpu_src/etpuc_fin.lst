@@ -1,0 +1,1310 @@
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  1
+
+
+                                        /*******************************************************************************
+                                         * 版权 2015-2016 中国航空工业集团第六三一所第十八研究室
+                                         *
+                                         * 对本文件的拷贝、发布、修改或者其他任何用途必须得到中国航空工业集团第六三一所
+                                         * 的书面协议许可。
+                                         *
+                                         * Copyrights (2015-2016) ACTRI
+                                         * All Right Reserved
+                                         *******************************************************************************
+
+                                         *******************************************************************************
+                                         * Revision History
+                                         *------------------------------------------------------------------------------
+                                         * 2017-12-07, gbo, created
+                                         *******************************************************************************
+
+                                         *******************************************************************************
+                                         * content
+                                         *------------------------------------------------------------------------------
+                                         *  File            : etpuc_fin.c
+                                         *  Description     : ETPU频率量采集
+                                         *  Call            : 029-89186510
+                                         ******************************************************************************/
+                                        #include <etpuc.h>
+                                        #ifndef __ETPUC_H
+0007                                    #define __ETPUC_H
+
+                                        /*
+                                         *  eTPU C Code Development System
+                                         *
+                                         *  Processor register definitions
+                                         *  for the eTPU C Code Development System.
+                                         *
+                                         *  This code may be adapted for any purpose
+                                         *  when used with the eTPU C Code Development
+                                         *  System.  No warranty is implied or given
+                                         *  as to their usability for any purpose.
+                                         *
+                                         *  (c) Copyright 2002-2004 Byte Craft Limited
+                                         *  421 King St.N., Waterloo, ON, Canada, N2J 4E4
+                                         *  VOICE: 1 (519) 888 6911
+                                         *  FAX  : 1 (519) 746 6751
+                                         *  email: support@bytecraft.com
+                                         *
+                                         *  Byte Craft Limited
+                                         *  Waterloo, Ontario
+                                         *  Canada N2J 4E4
+                                         *  (519) 888-6911
+                                         *
+                                         *  Walter Banks
+                                         *
+                                         * Revision history
+                                         * ----------------
+                                         * V0.90  WB    Nov 2003  First pre-release of etpuc.h based on V1.10 etpu.h with
+                                         *                        changes to reflect eTPU naming conventions
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  2
+
+
+                                         * V1.00  WB    Nov 2003  First release changes to the channel fields to reflect
+                                         *                        naming conventions for eTPU
+                                         * V1.01  WB    Dec 2003  Corrected definitions of pin_opacA and pin_opacB
+                                         *
+                                         *
+                                         *
+                                         *  All of the eTPU registers can be directly accessed from C
+                                         *
+
+                                             register_ac        ac   ;      // 24 bits
+                                             register_b         b    ;      // 24 bits
+                                             register_c         c    ;      // 24 bits
+                                             register_d         d    ;      // 24 bits
+                                             register_chan      chan ;      //  5 bits
+                                             register_diob      diob ;      // 24 bits
+                                             register_erta      erta ;      // 24 bits
+                                             register_ertb      ertb ;      // 24 bits
+                                             register_link      link ;      //  8 bits
+                                             register_mach      mach ;      // 24 bits
+                                             register_macl      macl ;      // 24 bits
+                                             register_p         p    ;      // 24 bits
+                                             register_rar       rar  ;      // 14 bits
+                                             register_sr        sr   ;      // 24 bits
+                                             register_tcr1      tcr1 ;      // 24 bits
+                                             register_tcr2      tcr2 ;      // 24 bits
+                                             register_tpr       tpr  ;      // 16 bits
+                                             register_trr       trr  ;      // 24 bits
+                                             register_chan_base chan_base;  // 24 bits
+                                        */
+
+                                        /* The following registers are defined for
+                                           eTPU C application code */
+
+0000                                         register_chan       chan ;       //  5 bits
+0000                                         register_erta       erta ;       // 24 bits
+0000                                         register_ertb       ertb ;       // 24 bits
+0000                                         register_tcr1       tcr1 ;       // 24 bits
+0000                                         register_tcr2       tcr2 ;       // 24 bits
+0000                                         register_tpr        tpr  ;       // 16 bits
+0000                                         register_trr        trr  ;       // 24 bits
+0000                                         register_chan_base  chan_base;   // 24 bits
+0000                                         register_link       link;        // 8 bits
+
+                                        /*
+                                           The link request can be set by copying the
+                                           channel number into the link register. The
+                                           following definition does this.
+                                         */
+
+0008                                    #define link_request(channel) link = channel
+
+                                        /*
+                                         *
+                                         *
+                                         *  All of the eTPU channel fields are predefined as a
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  3
+
+
+                                         *  large C structure (chan_struct) by the eTPU C compiler.
+                                         *
+                                         *  struct chan {
+                                         *               CIRC   int : 2 ;
+                                         *               ERWA   int : 1 ;
+                                         *               ERWB   int : 1 ;
+                                         *               FLC    int : 3 ;
+                                         *               IPACA  int : 3 ;
+                                         *               IPACB  int : 3 ;
+                                         *               LSR    int : 1 ;  // w test
+                                         *               MRLA   int : 1 ;  // w test
+                                         *               MRLB   int : 1 ;  // w test
+                                         *               MRLE   int : 1 ;
+                                         *               MTD    int : 2 ;
+                                         *               OPACA  int : 3 ;
+                                         *               OPACB  int : 3 ;
+                                         *               PDCM   int : 4 ;
+                                         *               PIN    int : 3 ;
+                                         *               TBSA   int : 4 ;
+                                         *               TBSB   int : 4 ;
+                                         *               TDL    int : 1 ;
+                                         *               SMPR   int : 2 ;
+                                         * State Resolution
+                                         *               FLAG0  int : 1 ;  // w only also defined in FLC
+                                         *               FLAG1  int : 1 ;
+                                         * Channel Flags
+                                         *               FM0    int : 1 ;
+                                         *               FM1    int : 1 ;
+                                         *         //    LSR    int : 1 ;  // also channel fields
+                                         *         //    MRLA   int : 1 ;  // also channel fields
+                                         *         //    MRLB   int : 1 ;  // also channel fields
+                                         *               PSS    int : 1 ;
+                                         *               PSTI   int : 1 ;
+                                         *               PSTO   int : 1 ;
+                                         *               TDLA   int : 1 ;
+                                         *               TDLB   int : 1 ;
+                                         *              }
+                                         ***/
+
+0000                                    chan_struct channel;
+0000                                    register_cc        CC;
+
+0009                                    #define erwA       channel.ERWA
+000A                                    #define erwB       channel.ERWB
+
+000B                                    #define flc        channel.FLC
+000C                                    #define ipacA      channel.IPACA
+000D                                    #define ipacB      channel.IPACB
+000E                                    #define lsr        channel.LSR
+
+000F                                    #define mrlA       channel.MRLA
+0010                                    #define mrlB       channel.MRLB
+0011                                    #define mrle       channel.MRLE
+0012                                    #define mtd        channel.MTD
+0013                                    #define opacA      channel.OPACA
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  4
+
+
+0014                                    #define opacB      channel.OPACB
+0015                                    #define pdcm       channel.PDCM
+0016                                    #define pin        channel.PIN
+0017                                    #define act_unitA  channel.TBSA
+0018                                    #define act_unitB  channel.TBSB
+0019                                    #define tdl        channel.TDL
+001A                                    #define flag0      channel.FLAG0
+001B                                    #define flag1      channel.FLAG1
+001C                                    #define fm0        channel.FM0
+001D                                    #define fm1        channel.FM1
+001E                                    #define pss        channel.PSS
+001F                                    #define psti       channel.PSTI
+0020                                    #define psto       channel.PSTO
+0021                                    #define tdlA       channel.TDLA
+0022                                    #define tdlB       channel.TDLB
+
+
+                                        // IPAC 1,2
+00000000                                #define no_detect                 0
+00000001                                #define low_high                  1
+00000002                                #define high_low                  2
+00000003                                #define any_trans                 3
+00000004                                #define detect_input_0_on_match   4
+00000005                                #define detect_input_1_on_match   5
+00000007                                #define no_change_ipac            7
+
+                                        // OPAC 1,2  fields
+
+00000000                                #define match_no_change   0
+00000001                                #define match_high        1
+00000002                                #define match_low         2
+00000003                                #define match_toggle      3
+00000001                                #define opac_high         1
+00000002                                #define opac_low          2
+00000003                                #define toggle            3
+00000004                                #define opac_high_low     4
+00000005                                #define opac_low_high     5
+00000004                                #define transition_low    4
+00000005                                #define transition_high   5
+00000006                                #define transition_toggle 6
+
+                                        // PDCM fields
+00000000                                #define em_b_st  0              //Either Match, Blocking, Single Transition
+00000001                                #define em_b_dt  1              //Either Match, Blocking, Double Transition
+00000002                                #define em_nb_st 2              //Either Match, NonBlocking, Single Transition
+00000003                                #define em_nb_dt 3              //Either Match, NonBlocking, Double Transition
+00000004                                #define m2_st    4              //Match2, Single, Transition
+00000005                                #define m2_dt    5              //Match2, Double, Transition
+00000006                                #define bm_st    6              //Both Match, Single Transition
+00000007                                #define bm_dt    7              //Both Match, Double Transition
+00000008                                #define m2_o_st  8              //Match2, Ordered, Single Transition
+00000009                                #define m2_o_dt  9              //Match2, Ordered, Double Transition
+0000000E                                #define sm_st_e  0xE                //Single Match, Single Transition, Enhanced
+0000000C                                #define sm_st    0xC                //Single Match, Single Transition
+0000000D                                #define sm_dt    0xD                //Single Match, Double Transition
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  5
+
+
+
+                                        // Time Bases Selection for match and capture
+00000000                                #define Mtcr1_Ctcr1_ge       0      //Match tcr1, Capture tcr1, greater than
+00000001                                #define Mtcr2_Ctcr1_ge       1      //Match tcr2, Capture tcr1, greater than
+00000002                                #define Mtcr1_Ctcr2_ge       2      //Match tcr1, Capture tcr2, greater than
+00000003                                #define Mtcr2_Ctcr2_ge       3      //Match tcr2, Capture tcr2, greater than
+00000004                                #define Mtcr1_Ctcr1_eq       4      //Match tcr1, Capture tcr1, equal
+00000005                                #define Mtcr2_Ctcr1_eq       5      //Match tcr2, Capture tcr1, equal
+00000006                                #define Mtcr1_Ctcr2_eq       6      //Match tcr1, Capture tcr2, equal
+00000007                                #define Mtcr2_Ctcr2_eq       7      //Match tcr2, Capture tcr2, equal
+
+00000008                                #define enable_output_buffer  8     // TBSx[3] = 1, TBSx[2:0] = 000
+00000009                                #define disable_output_buffer 9     // TBSx[3] = 1, TBSx[2:0] = 001
+0000000F                                #define do_nothing       15     // TBSx[3] = 1, TBSx[2:0] = 111
+
+                                        // Time Bases Selection for transition and capture
+00000000                                #define Capture_tcr1        0       //TBSx[2] = 0
+00000002                                #define Capture_tcr2        2       //TBSx[2] = 1
+
+                                        // Tooth Program Register structure
+
+                                        struct tpr_struct {
+0000 0A 00                                int TICKS   : 10;
+0001 01 02                                int TPR10   : 1;
+0001 01 03                                int HOLD    : 1;
+0001 01 04                                int IPH     : 1;
+0001 02 05                                int MISSCNT : 2;
+0001 01 07                                int LAST    : 1;
+0000                                      } ;
+
+                                        // pin definitions
+                                        //   pin = pin_high;
+00000000                                #define pin_opacA  0
+00000001                                #define pin_opacB  1
+00000002                                #define pin_high   2
+00000004                                #define pin_low    4
+
+                                        #endif /* __ETPUC_H */
+
+                                        #include <eTPUc_common.h>
+                                        #ifndef __ETPUC_COMMON_H
+0023                                    #define __ETPUC_COMMON_H
+
+                                        /********************************************************************************
+
+                                         FILE NAME: etpuc_common.h
+
+                                         COPYRIGHT (c) ASH WARE, Byte Craft Limited, Freescale 2002-2004.
+                                         All Rights Reserved.
+
+                                         VERSION:  1.0
+
+                                         This file is maintained as part of the support for the eTPU_C
+                                         development tools by Byte Craft Limited.
+
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  6
+
+
+                                         This code may be adapted for any purpose when used with the eTPU_C
+                                         Code Development System.  No warranty is implied or given as to their
+                                         usability for any purpose.
+
+                                         Portions of this file are governed by the following copyrights and
+                                         terms:
+
+                                         (c) Freescale 2002-2004 FREESCALE, INC. All Rights Reserved.
+                                         *  You are hereby granted a copyright license to use, modify, and
+                                         *  distribute the SOFTWARE so long as this entire notice is
+                                         *  retained without alteration in any modified and/or redistributed
+                                         *  versions, and that such modified versions are clearly identified
+                                         *  as such. No licenses are granted by implication, estoppel or
+                                         *  otherwise under any patents or trademarks of Freescale, Inc. This
+                                         *  software is provided on an "AS IS" basis and without warranty.
+                                         *
+                                         *  To the maximum extent permitted by applicable law, FREESCALE
+                                         *  DISCLAIMS ALL WARRANTIES WHETHER EXPRESS OR IMPLIED, INCLUDING
+                                         *  IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+                                         *  PURPOSE AND ANY WARRANTY AGAINST INFRINGEMENT WITH REGARD TO THE
+                                         *  SOFTWARE (INCLUDING ANY MODIFIED VERSIONS THEREOF) AND ANY
+                                         *  ACCOMPANYING WRITTEN MATERIALS.
+                                         *
+                                         *  To the maximum extent permitted by applicable law, IN NO EVENT
+                                         *  SHALL FREESCALE BE LIABLE FOR ANY DAMAGES WHATSOEVER (INCLUDING
+                                         *  WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS
+                                         *  INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR OTHER PECUNIARY
+                                         *  LOSS) ARISING OF THE USE OR INABILITY TO USE THE SOFTWARE.
+                                         *
+                                         *  Freescale assumes no responsibility for the maintenance and support
+                                         *  of this software
+
+                                         (c) Copyright 2002-2004 Byte Craft Limited
+                                         421 King St.N., Waterloo, ON, Canada, N2J 4E4
+                                         VOICE: 1 (519) 888 6911
+                                         email: support@bytecraft.com
+
+                                         (c) Copyright 2002-2004 ASH WARE
+
+                                        ================================================================================
+
+                                        DESCRIPTION: This file defines the application-friendly macros,
+                                        functions for common tasks like channel set up and register control
+                                        field access.
+
+                                        ================================================================================
+
+                                        SOURCES:
+
+                                        etpuc_common.h is based on the following header files commonly used by
+                                        the eTPU development community:
+
+                                        AshWareETpu.h - developed by Andy Klumpp from ASH WARE
+                                        Mike.h - developed by Mike Pauwels from Freescale
+                                        etpu_common.h - developped by Ming Li from Freescale
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  7
+
+
+
+                                        Jeff Loeliger from Freescale and Walter Banks from Byte Craft
+                                        also made significant contibutions.
+
+                                        ================================================================================
+                                         UPDATE HISTORY
+                                         REV      AUTHOR        DATE                DESCRIPTION OF CHANGE
+                                         ---      -------      --------    ---------------------
+                                         0.0      Ming Li      10/30/03    Initial creation
+                                         0.1      Ming Li      11/12/03    Updated to incorporate comments from eTPU
+                                                                           development community.
+                                         0.2      Walter Banks 15 Dec 03   Made changes to be reflect definitions in
+                                                                           eTPUc.h
+                                                                           Corrected IsTransALatched()
+                                                                                     IsTransBLatched()
+                                                                           Added missing definitions
+                                                                                     set_pin_per_opacA
+                                                                                     set_pin_per_opacB
+                                                                                     force_pin_high
+                                                                                     force_pin_low
+                                                                           Corrected opac1 to opacA
+                                                                                     opac2 to opacB
+
+                                         0.3      Walter Banks  5 Jan 04   Corrected opacB = pin_action; to
+                                                                               opacA = pin_action;
+
+                                         0.4     J. Loeliger    21/Jan/04  Cleared up reorganized and added more:
+                                                                           -Moved TRUE & FALSE to top and added
+                                                                              conditional
+                                                                           -Moved entry conditions up and added macros
+                                                                              for all conditions
+                                                                           -Merged with AshWareETpu.h
+                                                                              -Removed commet with of PDCM names.
+                                                                           -Grouped latches and flags together.
+                                                                             -added new set and clear for latches and
+                                                                                flags
+                                                                           -Merged output pin value to 1 set rather
+                                                                              than 2
+                                                                           -Added long channel mode names.
+                                                                           -Added SetupMatch_AB for better
+                                                                              optimization
+                                                                           -Added match only conditions for output
+                                                                              functions.
+                                                                           -Added new ActionUnintA/B macros
+                                                                           -Added new Pin macro
+                                                                           -And more.
+                                         0.5     J. Loeliger     12/Feb/04 -Changed DetectTrans to OnTrans.
+                                         0.6     J. Loeliger     30/Mar/04 -Added SetupMatchB and fixed some old
+                                                                             references to 1 & 2 -> A & B
+                                         0.7     J. Loeliger     16/Apr/04 -Changed Disable match (MRLE) to =0
+                                         0.8     J. Loeliger     27/Apr/04 -Fixed Disable/Enable match in thread,
+                                                                              they were swapped.
+                                         0.9     J. Loeliger     10/May/04 -Added support for OBE with new
+                                                 M. Brejl                   EnableOutputBuffer()/DisableOutputBuffer()
+                                                                            Removed all // comments. Changed Motorola
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  8
+
+
+                                                                            to Freescale.
+                                                                            Fixed spelling mistake in GetCurentChanNum
+
+                                         0.4     Karen McMurray  19 May 04  Changed all ertA to erta
+                                                                                        ertB to ertb.
+
+                                         1.0     Kirk Zurell     11 Aug 04  Integrated etpuc_common.h from J. Loeliger
+                                                                            and etpuc_common.h from Byte Craft Limited.
+                                                                            Removed tabs & made comments more sustainable.
+                                                                            Conditionalized some definitions to be more
+                                                                            economical on symbols.
+
+                                                                            Divider lines have 80 asterices.
+
+                                        */
+
+
+
+                                        /********************************************************************************/
+
+                                        /* This file depends upon definitions from etpuc.h */
+
+                                        #ifndef __ETPUC_H
+                                        #include <etpuc.h>
+                                        #endif /* __ETPUC_H */
+
+
+                                        /********************************************************************************/
+
+                                        /* Constant definitions */
+
+                                        #ifndef TRUE
+00000001                                #define TRUE        1
+                                        #endif
+
+                                        #ifndef FALSE
+00000000                                #define FALSE       0
+                                        #endif
+
+
+                                        /********************************************************************************/
+
+                                        /* State Resolution Flags, and other latches */
+
+                                        /* Clear() definitions */
+0024                                    #define LSRLatch      lsr
+0025                                    #define LatchedMatchA mrlA
+0026                                    #define LatchedMatchB mrlB
+0027                                    #define TransLatch    tdl
+
+                                        /* Macros */
+
+                                        /* Set flag0 or flag1
+                                           Usage: Set(flag0 | flag1);*/
+
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE  9
+
+
+0028                                    #define Set(cond)     (cond = 1)
+
+                                        /* Clear a flag
+                                           Usage: Clear(flag0 | flag1 | LSRLatch | lsr | MatchALatch | mrlA |
+                                                         MatchBLatch | mrlB | TransLatch | tdl);         */
+
+0029                                    #define Clear(cond)   (cond = 0)
+
+                                        /* SYNONYMS */
+                                        /* Flag 0 & flag 1 */
+002A                                    #define ClrFlag0()  (channel.FLAG0 = 0)
+002B                                    #define SetFlag0()  (channel.FLAG0 = 1)
+002C                                    #define ClrFlag1()  (channel.FLAG1 = 0)
+002D                                    #define SetFlag1()  (channel.FLAG1 = 1)
+
+
+002E                                    #define FunctionMode0          channel.FM0
+002F                                    #define IsFunctionMode0()     (channel.FM0==1)
+0030                                    #define IsSampledFuncMode0()  (channel.FM0==1)
+0031                                    #define IsLatchedFuncMode0()  (channel.FM0==1)
+
+0032                                    #define FunctionMode1          channel.FM1
+0033                                    #define IsFunctionMode1()     (channel.FM1==1)
+0034                                    #define IsSampledFuncMode1()  (channel.FM1==1)
+0035                                    #define IsLatchedFuncMode1()  (channel.FM1==1)
+
+
+                                        /********************************************************************************/
+
+                                        /* Writing the match registers and enabling/disabling the Match
+                                           Recognition Latch Enable */
+
+0036                                    #define EnableMatchA()                 (channel.ERWA = 0)
+0037                                    #define EnableMatchB()                 (channel.ERWB = 0)
+0038                                    #define DisableMatch()                 (channel.MRLE = 0)
+
+                                        /* SYNONYMS */
+0039                                    #define WriteErtAToMatchAAndEnable()   channel.ERWA = 0
+003A                                    #define WriteErtBToMatchBAndEnable()   channel.ERWB = 0
+003B                                    #define DisableMatchDetection();       channel.MRLE = 0
+
+
+                                        /* Read capture register */
+003C                                    #define GetCapRegA()  (erta)
+003D                                    #define GetCapRegB()  (ertb)
+
+                                        /* Clear Latch */
+003E                                    #define ClearLSRLatch()       (channel.LSR  = 0)
+
+003F                                    #define ClearMatchALatch()    (channel.MRLA = 0)
+0040                                    #define ClearMatchBLatch()    (channel.MRLB = 0)
+
+0041                                    #define ClearTransLatch()     (channel.TDL = 0)
+
+                                        /* SYNONYMS */
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 10
+
+
+0042                                    #define ClearLinkServiceRequestEvent() (lsr  = 0)
+
+0043                                    #define ClearMatchAEvent()    (channel.MRLA = 0)
+0044                                    #define ClearMatchBEvent()    (channel.MRLB = 0)
+
+0045                                    #define ClearTransitionEvents() (channel.TDL = 0)
+
+
+
+                                        /* Test latch conditions */
+
+0046                                    #define TransitionALatch           channel.TDLA
+0047                                    #define IsTransALatched()         (channel.TDLA==1)
+
+0048                                    #define TransitionBLatch           channel.TDLB
+0049                                    #define IsTransBLatched()         (channel.TDLB==1)
+
+004A                                    #define MatchALatch            channel.MRLA
+004B                                    #define IsMatchALatched()     (channel.MRLA==1)
+
+004C                                    #define MatchBLatch            channel.MRLB
+004D                                    #define IsMatchBLatched()     (channel.MRLB==1)
+
+                                        /* SYNONYMS */
+004E                                    #define IsLatchedTransitionA()    (channel.TDLA==1)
+004F                                    #define IsLatchedTransitionB()    (channel.TDLB==1)
+0050                                    #define IsLatchedMatchA()         (channel.MRLA==1)
+0051                                    #define IsLatchedMatchB()         (channel.MRLB==1)
+
+
+
+                                        /********************************************************************************/
+
+                                        /* Enabling/Disabling Event Handling */
+
+0052                                    #define EnableEventHandling()                   (channel.MTD = 0)
+0053                                    #define DisableEventHandling()                  (channel.MTD = 1)
+
+                                        /* SYNONYMS */
+0054                                    #define EnableMatchAndTransitionEventHandling()  channel.MTD = 0
+0055                                    #define DisableMatchAndTransitionEventHandling() channel.MTD = 1
+
+
+                                        /********************************************************************************/
+
+                                        /* Semaphore Operations */
+
+0056                                    #define IsSemaphoreLocked()   (channel.SMPR == 1)
+0057                                    #define LockSemaphore(num)    (channel.SMPR = num)
+0058                                    #define FreeSemaphore()       (channel.SMPR = -1)
+
+
+                                        /********************************************************************************/
+
+                                        /* Exceptions */
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 11
+
+
+
+                                        /* Channel control macros */
+0059                                    #define SetChannelInterrupt()       (channel.CIRC = 0)
+005A                                    #define SetChannelInterruptRequest()(channel.CIRC = 0)
+
+005B                                    #define SetDataTransferInterrupt()        (channel.CIRC = 1)
+005C                                    #define SetDataTransferInterruptRequest() (channel.CIRC = 1)
+
+005D                                    #define SetGlobalException()  (channel.CIRC = 2)
+
+                                        /* Channel control */
+
+                                        /* Generate the link service request to channel[ChNum] */
+005E                                    #define LinkToChannel(ChNum)            (link = ChNum)
+005F                                    #define LinkTo(num)                 link = num;
+0060                                    #define LinkToEngine1Chan(num)      link = (num | (1<<6))
+0061                                    #define LinkToEngine2Chan(num)      link = (num | (2<<6))
+0062                                    #define LinkToOtherEngineChan(num)  link = (num | (3<<6))
+
+                                        /* switch to specified channel from current channel */
+0063                                    #define SwitchToChannel(ChNum)      (chan = ChNum)
+
+                                        /* return current channel number */
+0064                                    #define GetCurrentChanNum()         (chan)
+
+                                        /* branch condition */
+0065                                    #define LinkServiceRequest     channel.LSR
+0066                                    #define IsLinkReqActive()     (channel.LSR==1)
+0067                                    #define IsSampledLink()       (channel.LSR==1)
+0068                                    #define IsLatchedLink()       (channel.LSR==1)
+
+
+                                        /********************************************************************************/
+
+                                        /* Entry Conditions Definition */
+
+                                        /* Usage: use these in the if()/else if()/else structure in an
+                                           ETPU_function */
+
+0069                                    #define HostServiceRequest               hsr
+006A                                    #define IsHostServiceRequestEvent(num)   (hsr==num)
+
+006B                                    #define MatchA_TransB                    (m1==1)
+006C                                    #define matchA_transB                    (m1==1)
+006D                                    #define IsMatchAOrTransitionBEvent()     (m1==1)
+
+006E                                    #define MatchB_TransA                    (m2==1)
+006F                                    #define matchB_transA                    (m2==1)
+0070                                    #define IsMatchBOrTransitionAEvent()     (m2==1)
+
+0071                                    #define linkRequest                      (lsr==1)
+0072                                    #define IsLinkServiceRequestEvent()      (lsr==1)
+
+                                        /* For output-only functions */
+0073                                    #define MatchA                           (m1==1)
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 12
+
+
+0074                                    #define MatchB                           (m2==1)
+
+
+                                        /********************************************************************************/
+
+                                        /* Predefined Channel Modes (PDCM) */
+
+0075                                    #define SetChannelMode(mode)        (channel.PDCM = mode)
+0076                                    #define channel_setup channel.PDCM
+
+                                        /* Usage:       channel_setup = PDCM_constant
+
+                                        PDCM_constants are taken from etpuc.h:
+                                        em_b_st         Either Match, Blocking, Single Transition
+                                        em_b_dt         Either Match, Blocking, Double Transition
+                                        em_nb_st        Either Match, NonBlocking, Single Transition
+                                        em_nb_dt        Either Match, NonBlocking, Double Transition
+                                        m2_st           Match2, Single, Transition
+                                        m2_dt           Match2, Double, Transition
+                                        bm_st           Both Match, Single Transition
+                                        bm_dt           Both Match, Double Transition
+                                        m2_o_st         Match2, Ordered Single Blocking Transition
+                                        m2_o_dt         Match2, Ordered Double Transition
+                                        sm_st_e         Single Match, Single Transition Enhanced
+                                        sm_st           Single Match, Single Transition
+                                        sm_dt           Single Match, Double Transition
+                                        */
+
+                                        /* SYNONYMS */
+0077                                    #define EitherMatchBlockingSingleTransition()     channel.PDCM = em_b_st
+0078                                    #define EitherMatchBlockingDoubleTransition()     channel.PDCM = em_b_dt
+0079                                    #define EitherMatchNonBlockingSingleTransition()  channel.PDCM = em_nb_st
+007A                                    #define EitherMatchNonBlockingDoubleTransition()  channel.PDCM = em_nb_dt
+007B                                    #define Match2SingleTransition()                  channel.PDCM = m2_st
+007C                                    #define Match2DoubleTransition()                  channel.PDCM = m2_dt
+007D                                    #define BothMatchSingleTransition()               channel.PDCM = bm_st
+007E                                    #define BothMatchDoubleTransition()               channel.PDCM = bm_dt
+007F                                    #define Match2OrderedSingleBlockingTransition()   channel.PDCM = m2_o_st
+0080                                    #define Match2OrderedDoubleTransition()           channel.PDCM = m2_o_dt
+0081                                    #define SingleMatchSingleTransitionEnhanced()     channel.PDCM = sm_st_e
+0082                                    #define SingleMatchSingleTransition()             channel.PDCM = sm_st
+0083                                    #define SingleMatchDoubleTransition()             channel.PDCM = sm_dt
+
+
+                                        #define ClearAllLatches()         \
+0084                                            (lsr = 0);(mrlA = 0);(mrlB = 0);(tdl = 0);
+
+
+                                        /********************************************************************************/
+
+                                        /* Complex Macros */
+
+                                        /* These macros should provide the most optimized way of doing things.
+                                           They should be in the best order for optimizing. The compiler might
+                                           be able to identify this code for optimization. */
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 13
+
+
+
+                                        #define SetupMatchA(reference) \
+                                                erta = reference;      \
+                                                EnableMatchA();        \
+0085                                            ClearMatchALatch();
+
+                                        #define SetupMatchB(reference) \
+                                                ertb = reference;      \
+                                                EnableMatchB();        \
+0086                                            ClearMatchBLatch();
+
+                                        /* These are ONLY useful for init. and if you know which TCR you want
+                                           to use. Latches are cleared at the end so it can be combined with
+                                           other latches. */
+
+                                        #define ConfigMatch_AB() \
+                                                WriteErtAToMatchAAndEnable(); \
+                                                WriteErtBToMatchBAndEnable(); \
+                                                EnableMatchA();        \
+                                                EnableMatchB();        \
+                                                EnableEventHandling();\
+                                                ClearMatchALatch();\
+0087                                            ClearMatchBLatch();
+
+                                        #define SetupMatch_A(reference, timebase_comparator, pin_action) \
+                                                erta = reference; \
+                                                act_unitA = timebase_comparator; \
+                                                opacA = pin_action; \
+                                                EnableMatchA();        \
+                                                ClearMatchALatch();\
+0088                                            EnableEventHandling();
+
+                                        #define SetupMatch_B(reference, timebase_comparator, pin_action) \
+                                                ertb = reference; \
+                                                act_unitB = timebase_comparator; \
+                                                opacB = pin_action; \
+                                                EnableMatchB();        \
+                                                ClearMatchBLatch();\
+0089                                            EnableEventHandling();
+
+                                        #define SetupCaptureTrans_A(timebase, pin_trans) \
+                                                act_unitA = timebase;\
+                                                ipacA = pin_trans;\
+                                                ClearTransLatch();\
+008A                                            EnableEventHandling();
+
+                                        #define SetupCaptureTrans_B(timebase, pin_trans) \
+                                                act_unitB = timebase;\
+                                                ipacB = pin_trans;\
+                                                ClearTransLatch();\
+008B                                            EnableEventHandling();
+
+
+                                        /********************************************************************************/
+
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 14
+
+
+                                        /* Action Units */
+
+                                        /* Usage: ActionUnitA( MatchTCR1 | MatchTCR2,
+                                                               CaptureTCR1 | CaptureTCR2,
+                                                               GreaterEqual | EqualOnly ); */
+
+008C                                    #define ActionUnitA( match, capture, compare)   (act_unitA=match##capture##compare)
+008D                                    #define ActionUnitB( match, capture, compare)   (act_unitB=match##capture##compare)
+
+008E                                    #define MatchTCR1    Mtcr1_
+008F                                    #define MatchTCR2    Mtcr2_
+0090                                    #define CaptureTCR1  Ctcr1_
+0091                                    #define CaptureTCR2  Ctcr2_
+0092                                    #define GreaterEqual ge
+0093                                    #define EqualOnly    eq
+
+                                        /* SYNONYMS */
+                                        /* Action Unit A, Time Bases for match and capture */
+0094                                    #define TimeBaseAMatchTcr1CaptureTcr1GreaterEqual()      channel.TBSA = Mtcr1_Ctcr1_ge
+0095                                    #define TimeBaseAMatchTcr2CaptureTcr1GreaterEqual()      channel.TBSA = Mtcr2_Ctcr1_ge
+0096                                    #define TimeBaseAMatchTcr1CaptureTcr2GreaterEqual()      channel.TBSA = Mtcr1_Ctcr2_ge
+0097                                    #define TimeBaseAMatchTcr2CaptureTcr2GreaterEqual()      channel.TBSA = Mtcr2_Ctcr2_ge
+0098                                    #define TimeBaseAMatchTcr1CaptureTcr1ExactlyEqual()      channel.TBSA = Mtcr1_Ctcr1_eq
+0099                                    #define TimeBaseAMatchTcr2CaptureTcr1ExactlyEqual()      channel.TBSA = Mtcr2_Ctcr1_eq
+009A                                    #define TimeBaseAMatchTcr1CaptureTcr2ExactlyEqual()      channel.TBSA = Mtcr1_Ctcr2_eq
+009B                                    #define TimeBaseAMatchTcr2CaptureTcr2ExactlyEqual()      channel.TBSA = Mtcr2_Ctcr2_eq
+
+                                        /* Action Unit B, Time Bases for match and capture */
+009C                                    #define TimeBaseBMatchTcr1CaptureTcr1GreaterEqual()      channel.TBSB = Mtcr1_Ctcr1_ge
+009D                                    #define TimeBaseBMatchTcr2CaptureTcr1GreaterEqual()      channel.TBSB = Mtcr2_Ctcr1_ge
+009E                                    #define TimeBaseBMatchTcr1CaptureTcr2GreaterEqual()      channel.TBSB = Mtcr1_Ctcr2_ge
+009F                                    #define TimeBaseBMatchTcr2CaptureTcr2GreaterEqual()      channel.TBSB = Mtcr2_Ctcr2_ge
+00A0                                    #define TimeBaseBMatchTcr1CaptureTcr1ExactlyEqual()      channel.TBSB = Mtcr1_Ctcr1_eq
+00A1                                    #define TimeBaseBMatchTcr2CaptureTcr1ExactlyEqual()      channel.TBSB = Mtcr2_Ctcr1_eq
+00A2                                    #define TimeBaseBMatchTcr1CaptureTcr2ExactlyEqual()      channel.TBSB = Mtcr1_Ctcr2_eq
+00A3                                    #define TimeBaseBMatchTcr2CaptureTcr2ExactlyEqual()      channel.TBSB = Mtcr2_Ctcr2_eq
+
+
+
+                                        /********************************************************************************/
+
+                                        /* Pin output buffer */
+
+00A4                                    #define EnableOutputBuffer()           (channel.TBSA = enable_output_buffer)
+00A5                                    #define DisableOutputBuffer()          (channel.TBSA = disable_output_buffer)
+
+
+                                        /********************************************************************************/
+
+                                        /* Pin control */
+
+                                        /* Pin() definitions */
+00000002                                #define SetHigh pin_high
+00000004                                #define SetLow  pin_low
+00000000                                #define PerPacA pin_opacA
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 15
+
+
+00000001                                #define PerPacB pin_opacB
+
+                                        /* Set Output Pin
+                                           Usage: Pin( SetHigh | SetLow | PerPacA | PerPacB ); */
+00A6                                    #define Pin( state )          (channel.PIN=state)
+
+                                        /* Immediate output pin */
+00000000                                #define set_pin_per_opacA  pin_opacA
+00000001                                #define set_pin_per_opacB  pin_opacB
+00000002                                #define force_pin_high     pin_high
+00000004                                #define force_pin_low      pin_low
+
+00A7                                    #define SetPinHigh()          (channel.PIN=force_pin_high)
+00A8                                    #define SetPinLow()           (channel.PIN=force_pin_low)
+00A9                                    #define SetPinPerPacA()       (channel.PIN=set_pin_per_opacA)
+00AA                                    #define SetPinPerPacB()       (channel.PIN=set_pin_per_opacB)
+
+                                        /* Reading the pin states: branch conditions */
+
+00AB                                    #define SampledInputPin            channel.PSS
+00AC                                    #define IsLatchedInputPin()        (channel.PSS==1)
+00AD                                    #define IsInputPinHigh()           (channel.PSS==1)
+
+00AE                                    #define CurrentInputPin            channel.PSTI
+00AF                                    #define IsCurrentInputPin()        (channel.PSTI==1)
+
+00B0                                    #define CurrentOutputPin           channel.PSTO
+00B1                                    #define IsCurrentOutputPin()       (channel.PSTO==1)
+
+                                        /* SYNONYMS */
+00B2                                    #define IsSampledInputPinHigh()    (channel.PSS==1)
+00B3                                    #define IsLatchedInputPinHigh()    (channel.PSS==1)
+00B4                                    #define IsCurrentInputPinHigh()    (channel.PSTI==1)
+00B5                                    #define IsCurrentOutputPinHigh()   (channel.PSTO==1)
+
+
+
+                                        /********************************************************************************/
+
+                                        /* Output Pin Action */
+
+00000000                                #define NoChange    match_no_change
+00000001                                #define PinHigh     match_high
+00000002                                #define PinLow      match_low
+00000003                                #define PinToggle   match_toggle
+
+                                        /* Usage: OnMatchA( NoChange | PinHigh | PinLow | PinToggle ); */
+00B6                                    #define OnMatchA(action)      (opacA = action)
+00B7                                    #define OnMatchB(action)      (opacB = action)
+
+                                        /* SYNONYMS */
+                                        /* Action Unit A, Output Pin Actions */
+00B8                                    #define OnMatchAPinNoChange()      channel.OPACA = match_no_change
+00B9                                    #define OnMatchAPinHigh()          channel.OPACA = match_high
+00BA                                    #define OnMatchAPinLow()           channel.OPACA = match_low
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 16
+
+
+00BB                                    #define OnMatchAPinToggle()        channel.OPACA = match_toggle
+00BC                                    #define OnInputActionAPinLow()     channel.OPACA = transition_low
+00BD                                    #define OnInputActionAPinHigh()    channel.OPACA = transition_high
+00BE                                    #define OnInputActionAPinToggle()  channel.OPACA = transition_toggle
+
+                                        /* Action Unit B, Output Pin Actions */
+00BF                                    #define OnMatchBPinNoChange()      channel.OPACB = match_no_change
+00C0                                    #define OnMatchBPinHigh()          channel.OPACB = match_high
+00C1                                    #define OnMatchBPinLow()           channel.OPACB = match_low
+00C2                                    #define OnMatchBPinToggle()        channel.OPACB = match_toggle
+00C3                                    #define OnInputActionBPinLow()     channel.OPACB = transition_low
+00C4                                    #define OnInputActionBPinHigh()    channel.OPACB = transition_high
+00C5                                    #define OnInputActionBPinToggle()  channel.OPACB = transition_toggle
+
+
+                                        /********************************************************************************/
+
+                                        /* Input Pin Action */
+
+00000000                                #define NoDetect  no_detect
+00000001                                #define LowHigh   low_high
+00000002                                #define HighLow   high_low
+00000003                                #define AnyTrans  any_trans
+
+                                        /* Usage: DetectTransA( no_detect | low_high | high_low | any_trans | ...); */
+00C6                                    #define OnTransA(action)     (ipacA = action)
+00C7                                    #define OnTransB(action)     (ipacB = action)
+
+                                        /* SYNONYMS */
+                                        /* Action Unit A, Input Pin Edge Detection */
+00C8                                    #define DetectADisable()        channel.IPACA = no_detect
+00C9                                    #define DetectARisingEdge()     channel.IPACA = low_high
+00CA                                    #define DetectAFallingEdge()    channel.IPACA = high_low
+00CB                                    #define DetectAAnyEdge()        channel.IPACA = any_trans
+00CC                                    #define DetectALowOnMatchA()    channel.IPACA = detect_input_0_on_match
+00CD                                    #define DetectAHighOnMatchA()   channel.IPACA = detect_input_1_on_match
+
+                                        /* Action Unit B, Input Pin Edge Detection */
+00CE                                    #define DetectBDisable()        channel.IPACB = no_detect
+00CF                                    #define DetectBRisingEdge()     channel.IPACB = low_high
+00D0                                    #define DetectBFallingEdge()    channel.IPACB = high_low
+00D1                                    #define DetectBAnyEdge()        channel.IPACB = any_trans
+00D2                                    #define DetectBLowOnMatchA()    channel.IPACB = detect_input_0_on_match
+00D3                                    #define DetectBHighOnMatchA()   channel.IPACB = detect_input_1_on_match
+
+
+                                        /********************************************************************************/
+
+                                        /* Intrinsics synonyms */
+
+                                        /* Matches in Threads */
+00D4                                    #define DisableMatchesInThread()    match_disable()
+00D5                                    #define EnableMatchesInThread()     match_enable()
+
+
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 17
+
+
+
+                                        #endif /* __ETPUC_COMMON_H */
+
+                                        #ifdef FIN_FUNCTION_NUMBER
+                                        #pragma ETPU_function FreqIn, alternate @ FIN_FUNCTION_NUMBER;
+                                        #else
+0000                                    #pragma ETPU_function FreqIn, alternate;
+                                        #endif
+
+                                        /* 初始化线程 */
+00000007                                #define FIN_INIT            7
+                                        /* 同步更新计算频率需要等待的输入信号的周期数 */
+00000005                                #define FIN_PERIOD_UPDATE   5
+
+                                        /*是否使用TCR1，FunctionMode1使用该参数，仅用于初始化*/
+00000000                                #define FIN_USE_TCR1        0
+                                        /* 默认的计算频率需要等待的输入信号的周期数 */
+00000004                                #define FIN_DEFAULT_CNT     4
+
+                                        /*******************************************************************************
+                                         * FreqIn
+                                         *
+                                         * 描述:ETPU频率量采集，在指定的输入信号周期内，对时基进行计数，并返回计数结果
+                                         *      的均值
+                                         *
+                                         * 参数：
+                                         * 输入参数:
+                                         *     PeroidCnt: 输入信号的周期数，要求频率采集应在指定周期内计算时基的总数
+                                         *     PeriodCntUpdate: 需要更新的输入信号周期数，更新在下次计算周期时生效
+                                         *
+                                         * 输出参数:
+                                         *     Result: 计算得到的输入信号一个周期包含的时基数均值
+                                         *
+                                         * 备注:
+                                         *
+                                         * 遗留问题:
+                                         ******************************************************************************/
+                                        void FreqIn(int24 Result, int24 PeriodCnt, int24 PeriodCntUpdate)
+0001 0005 0009                          {
+                                            /* 保存每次计时开始的时基数 */
+000D                                        static int24 startTime;
+                                            /* 保存输入信号上升沿发生的次数 */
+0011                                        static int24 edgeTimes;
+                                            /* 保存更新周期数的标志 */
+0015                                        static int24 updateFlag;
+                                            
+                                            /* 初始化线程 */
+                                            if (HostServiceRequest == FIN_INIT)
+                                            {
+                                                DisableMatchesInThread();
+                                                OnTransA(NoDetect);
+                                                OnTransB(NoDetect);
+                                                Clear(TransLatch);
+                                                Clear(LSRLatch);
+                                                
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 18
+
+
+                                                SingleMatchSingleTransition();
+                                                
+0200 580FF7F9   chan ipaca = no_detect,         
+                    ipacb = no_detect,         
+                    sm_st,clr_lsr,         
+                    clr_tdl.            
+0204 BFFFFF04   ram PRAM17 = #0(24) .            edgeTimes = 0;
+0208 BFFFFF05   ram PRAM21 = #0(24) .            updateFlag = 0;
+                                                /* 若输入信号的周期数不合法则赋值为默认值 */
+020C BFEF0B81   alu a = 0 ;                     if (PeriodCnt <= 0)
+                    ram p23_0 = PRAM5.    
+0210 3819FFF4   alu nil = a - p ,ccs.            {
+0214 F488111F   if lt jump 0220,flush.         
+0218 1C1F7F9E   alu p = #0x04.                      PeriodCnt = FIN_DEFAULT_CNT;
+                                                }
+                                                
+                                                /* 若要求使用TCR1，则使用TCR1，否则使用TCR2 */
+021C BFFFFB81   ram PRAM5 = p23_0.         
+                                                if (FunctionMode1 == FIN_USE_TCR1)
+0220 F388117F   if fm1==1 jump 022C,    
+                    flush.              
+0224                                            {
+                                                    ActionUnitA(MatchTCR1, CaptureTCR1, GreaterEqual);
+0224 F7E0119F   jump 0230,noflush.                        }
+0228 4FF0FFFF                           
+                    chan tbsa = mtcr1_ctcr1_ge    
+                    .                   
+022C                                            else
+                                                {
+                                                    ActionUnitA(MatchTCR2, CaptureTCR2, GreaterEqual);
+022C 4FF3FFFF                           
+                    chan tbsa = mtcr2_ctcr2_ge         
+                    .                   
+0230                                            }
+                                                
+                                                /* 只检测上升沿即可 */
+                                                DetectARisingEdge();
+0230 59FFFFFF   chan ipaca = low_high.         
+0234                                            EnableMatchAndTransitionEventHandling();
+0234 F73FFCFB   chan mtd = enable_mtsr;        }
+                    end.                
+000A 00 80        00 A05 P01 MD 0200  HSR 6/7   lsr x  m1 x  m2 x  pin x  flag1 x  flag0 x                             
+                                         
+0000             Thread Local RAM size                                   
+                                            /* 更新计数周期线程 */
+                                            else if (HostServiceRequest == FIN_PERIOD_UPDATE)
+                                            {
+                                                /* 更新计数周期同步进行，该线程仅给出标志 */
+                                                updateFlag = 1;
+                                                /* 若新的周期不合法，则清标志 */
+0238 BDFF7B85   alu p = 1 ;             
+                    ram PRAM21 = p23_0.    
+023C BFEF0B82   alu a = 0 ;                     if (PeriodCntUpdate <= 0)
+                    ram p23_0 = PRAM9.    
+0240 3819FFF4   alu nil = a - p ,ccs.            {
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 19
+
+
+0244 F488127F   if lt jump 024C,flush.         
+0248 BFFFFF05   ram PRAM21 = #0(24) .                updateFlag = 0;
+                                                }
+024C 6FFFFFFF   end.                        }
+0008 40 8E        00 A04 P01 ME 0238  HSR 1/4/5 lsr x  m1 x  m2 x  pin x  flag1 x  flag0 x                             
+                                         
+0000             Thread Local RAM size                                   
+                                            /* TDLA服务事件 */
+                                            else if (m2 == 1)
+                                            {
+                                                /* 第一次检测到上升沿则保存起始时间 */
+0250 BFEFFB84   ram p23_0 = PRAM17.             if (edgeTimes == 0)
+0254 3BF8FFF4   alu nil = p ,ccs.               {
+0258 F0C0131F   if z==0 jump 0260,flush.         
+                                        
+025C BFFE7A83   alu p = erta ,ccs;                  startTime = erta;   
+                    ram PRAM13 = p23_0.         
+                                                }
+                                                /* 累加上升沿次数 */
+0260 BFEFFB84   ram p23_0 = PRAM17.             edgeTimes++;
+                                                
+                                                /* 到达要求的次数后，计算平均每周期包含的时基数 */
+0264 BDF87A84   alu p = p + 1 ,ccs;     
+                    ram PRAM17 = p23_0.    
+0268 BFE80A81   alu a = p ,ccs;                 if (edgeTimes >= PeriodCnt)
+                    ram p23_0 = PRAM5.    
+026C 3819FFF4   alu nil = a - p ,ccs.            {
+0270 F488144B   if lt jump 0288,flush;                Result = (erta - startTime) / edgeTimes;
+                    ram p23_0 = PRAM13.         
+0274 BC0E0A84   alu a = erta - p ,ccs;         
+                    ram p23_0 = PRAM17.         
+0278 3B190FEE   mdu a div p ,ccs.         
+027C F34813FF   if mb==1 jump 027C,flush         
+                    .                   
+0280 BFD87A80   alu p = macl ,ccs;         
+                    ram PRAM1 = p23_0.         
+0284 BFFFFF04   ram PRAM17 = #0(24) .                edgeTimes = 0;
+                                                }
+                                                
+                                                /* 当edgeTimes清零表示即将开始下次检测，则响应次数更新 */
+0288 BFEFFB84   ram p23_0 = PRAM17.             if (edgeTimes == 0 && updateFlag == 1)
+028C 3BF8FFF4   alu nil = p ,ccs.               {
+0290 F0C0154D   if z==0 jump 02A8,flush;                
+                    ram p23_0 = PRAM21.         
+0294 0808FBAA   alu nil = p ^ #0x000001,         
+                    ccs.                
+0298 F0C0155F   if z==0 jump 02A8,flush.                
+                                        
+029C BFEFFB82   ram p23_0 = PRAM9.                  PeriodCnt = PeriodCntUpdate;
+02A0 BFFFFB81   ram PRAM5 = p23_0.         
+02A4 BFFFFF05   ram PRAM21 = #0(24) .                updateFlag = 0;
+                                                }
+                                                
+                                                /* 清空TDL，以便下次检测 */
+                                                ClearTransitionEvents();
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 20
+
+
+02A8 6FEFFFFF   chan clr_tdl,end.           }
+0020 40 94        00 A10 P01 ME 0250  HSR 0     lsr x  m1 0  m2 1  pin 0  flag1 0  flag0 0                             
+0022 40 94        00 A11 P01 ME 0250  HSR 0     lsr x  m1 0  m2 1  pin 0  flag1 0  flag0 1                             
+0024 40 94        00 A12 P01 ME 0250  HSR 0     lsr x  m1 0  m2 1  pin 0  flag1 1  flag0 0                             
+0026 40 94        00 A13 P01 ME 0250  HSR 0     lsr x  m1 0  m2 1  pin 0  flag1 1  flag0 1                             
+0028 40 94        00 A14 P01 ME 0250  HSR 0     lsr x  m1 0  m2 1  pin 1  flag1 0  flag0 0                             
+002A 40 94        00 A15 P01 ME 0250  HSR 0     lsr x  m1 0  m2 1  pin 1  flag1 0  flag0 1                             
+002C 40 94        00 A16 P01 ME 0250  HSR 0     lsr x  m1 0  m2 1  pin 1  flag1 1  flag0 0                             
+002E 40 94        00 A17 P01 ME 0250  HSR 0     lsr x  m1 0  m2 1  pin 1  flag1 1  flag0 1                             
+0030 40 94        00 A18 P01 ME 0250  HSR 0     lsr x  m1 1  m2 1  pin 0  flag1 0  flag0 0                             
+0032 40 94        00 A19 P01 ME 0250  HSR 0     lsr x  m1 1  m2 1  pin 0  flag1 0  flag0 1                             
+0034 40 94        00 A1A P01 ME 0250  HSR 0     lsr x  m1 1  m2 1  pin 0  flag1 1  flag0 0                             
+0036 40 94        00 A1B P01 ME 0250  HSR 0     lsr x  m1 1  m2 1  pin 0  flag1 1  flag0 1                             
+0038 40 94        00 A1C P01 ME 0250  HSR 0     lsr x  m1 1  m2 1  pin 1  flag1 0  flag0 0                             
+003A 40 94        00 A1D P01 ME 0250  HSR 0     lsr x  m1 1  m2 1  pin 1  flag1 0  flag0 1                             
+003C 40 94        00 A1E P01 ME 0250  HSR 0     lsr x  m1 1  m2 1  pin 1  flag1 1  flag0 0                             
+003E 40 94        00 A1F P01 ME 0250  HSR 0     lsr x  m1 1  m2 1  pin 1  flag1 1  flag0 1                             
+                                         
+0000             Thread Local RAM size                                   
+                                            else
+                                            {
+                                        #ifdef GLOBAL_ERROR_FUNC
+                                                Global_Error_Func();
+                                        #else
+                                                ClearAllLatches();
+                                        #endif
+02AC 47EFF6BF   chan clr_lsr,clr_mrla,        }
+                    clr_mrlb,clr_tdl,end         
+                    .                   
+0000 C0 AB        00 A00 P23 ME 02AC  HSR 2/3   lsr x  m1 x  m2 x  pin 0  flag1 x  flag0 0                             
+0002 C0 AB        00 A01 P23 ME 02AC  HSR 2/3   lsr x  m1 x  m2 x  pin 0  flag1 x  flag0 1                             
+0004 C0 AB        00 A02 P23 ME 02AC  HSR 2/3   lsr x  m1 x  m2 x  pin 1  flag1 x  flag0 0                             
+0006 C0 AB        00 A03 P23 ME 02AC  HSR 2/3   lsr x  m1 x  m2 x  pin 1  flag1 x  flag0 1                             
+000C C0 AB        00 A06 P23 ME 02AC  HSR 0     lsr 1  m1 0  m2 0  pin 0  flag1 x  flag0 x                             
+000E C0 AB        00 A07 P23 ME 02AC  HSR 0     lsr 1  m1 0  m2 0  pin 1  flag1 x  flag0 x                             
+0010 C0 AB        00 A08 P23 ME 02AC  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 0  flag0 0                             
+0012 C0 AB        00 A09 P23 ME 02AC  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 0  flag0 1                             
+0014 C0 AB        00 A0A P23 ME 02AC  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 1  flag0 0                             
+0016 C0 AB        00 A0B P23 ME 02AC  HSR 0     lsr x  m1 1  m2 0  pin 0  flag1 1  flag0 1                             
+0018 C0 AB        00 A0C P23 ME 02AC  HSR 0     lsr x  m1 1  m2 0  pin 1  flag1 0  flag0 0                             
+001A C0 AB        00 A0D P23 ME 02AC  HSR 0     lsr x  m1 1  m2 0  pin 1  flag1 0  flag0 1                             
+001C C0 AB        00 A0E P23 ME 02AC  HSR 0     lsr x  m1 1  m2 0  pin 1  flag1 1  flag0 0                             
+001E C0 AB        00 A0F P23 ME 02AC  HSR 0     lsr x  m1 1  m2 0  pin 1  flag1 1  flag0 1                             
+                                         
+0000             Thread Local RAM size                                   
+0000             Local RAM requirements for eTPU Function FreqIn                                   
+                                        }
+
+                                        /* Information exported to Host CPU program */
+02B0                                    #pragma write h, (::ETPUfilename (etpu_fin_auto.h));
+02B0                                    #pragma write h, (/*******************************************************************************);
+02B0                                    #pragma write h, ( * 版权 2015-2016 中国航空工业集团第六三一所第十八研究室                        );
+02B0                                    #pragma write h, ( *                                                                              );
+02B0                                    #pragma write h, ( * 对本文件的拷贝、发布、修改或者其他任何用途必须得到中国航空工业集团第六三一所 );
+02B0                                    #pragma write h, ( * 的书面协议许可。                                                             );
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 21
+
+
+02B0                                    #pragma write h, ( *                                                                              );
+02B0                                    #pragma write h, ( * Copyrights (2015-2016) ACTRI                                                 );
+02B0                                    #pragma write h, ( * All Right Reserved                                                           );
+02B0                                    #pragma write h, ( *******************************************************************************);
+02B0                                    #pragma write h, (                                                                                );
+02B0                                    #pragma write h, ( *******************************************************************************);
+02B0                                    #pragma write h, ( * Revision History                                                             );
+02B0                                    #pragma write h, ( *------------------------------------------------------------------------------);
+02B0                                    #pragma write h, ( * 2017-12-07, gbo, created                                                     );
+02B0                                    #pragma write h, ( *******************************************************************************);
+02B0                                    #pragma write h, ( );
+02B0                                    #pragma write h, ( *******************************************************************************);
+02B0                                    #pragma write h, ( * content                                                                      );
+02B0                                    #pragma write h, ( *------------------------------------------------------------------------------);
+02B0                                    #pragma write h, ( *  File            : etpuc_fin_auto.h                                          );
+02B0                                    #pragma write h, ( *  Description     : 频率量采集头文件                                          );
+02B0                                    #pragma write h, ( *  Call            : 029-89186510                                              );
+02B0                                    #pragma write h, ( *  该文件由ETPU自动生成，请勿修改！！！                                        );
+02B0                                    #pragma write h, ( ******************************************************************************/);
+02B0                                    #pragma write h, (#ifndef _ETPU_FIN_AUTO_H_ );
+02B0                                    #pragma write h, (#define _ETPU_FIN_AUTO_H_ );
+02B0                                    #pragma write h, ( );
+02B0                                    #pragma write h, (/* Function Configuration Information */);
+02B0                                    #pragma write h, (::ETPUliteral(#define FS_ETPU_FIN_FUNCTION_NUMBER) FIN_FUNCTION_NUMBER );
+02B0                                    #pragma write h, (::ETPUliteral(#define FS_ETPU_FIN_TABLE_SELECT) ::ETPUentrytype(FreqIn) );
+02B0                                    #pragma write h, (::ETPUliteral(#define FS_ETPU_FIN_NUM_PARMS) ::ETPUram(FreqIn) );
+02B0                                    #pragma write h, ( );
+02B0                                    #pragma write h, (/* Host Service Request Definitions */);
+02B0                                    #pragma write h, (::ETPUliteral(#define FS_ETPU_FIN_INIT) FIN_INIT );
+02B0                                    #pragma write h, (::ETPUliteral(#define FS_ETPU_FIN_PERIOD_UPDATE) FIN_PERIOD_UPDATE );
+02B0                                    #pragma write h, ( );
+02B0                                    #pragma write h, (/* Parameter Definitions */);
+02B0                                    #pragma write h, (::ETPUliteral(#define FS_ETPU_FIN_RESULT_OFFSET) ::ETPUlocation (FreqIn, Result) );
+02B0                                    #pragma write h, (::ETPUliteral(#define FS_ETPU_PWM_PERIOD_CNT_OFFSET) ::ETPUlocation (FreqIn, PeriodCnt) );
+02B0                                    #pragma write h, (::ETPUliteral(#define FS_ETPU_PWM_PERIOD_CNT_UPD_OFFSET) ::ETPUlocation (FreqIn, PeriodCntUpdate) );
+02B0                                    #pragma write h, ( );
+02B0                                    #pragma write h, (#endif);
+02B0                                    #pragma write h, ( );
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 22
+
+
+
+
+SYMBOL TABLE
+
+LABEL                             VALUE LABEL                             VALUE 
+
+AnyTrans                         0003 | CC                               0000 
+Capture_tcr1                     0000 | Capture_tcr2                     0002 
+FALSE                            0000 | FIN_DEFAULT_CNT                  0004 
+FIN_INIT                         0007 | FIN_PERIOD_UPDATE                0005 
+FIN_USE_TCR1                     0000 | FreqIn                           0200 
+HighLow                          0002 | LowHigh                          0001 
+Mtcr1_Ctcr1_eq                   0004 | Mtcr1_Ctcr1_ge                   0000 
+Mtcr1_Ctcr2_eq                   0006 | Mtcr1_Ctcr2_ge                   0002 
+Mtcr2_Ctcr1_eq                   0005 | Mtcr2_Ctcr1_ge                   0001 
+Mtcr2_Ctcr2_eq                   0007 | Mtcr2_Ctcr2_ge                   0003 
+NoChange                         0000 | NoDetect                         0000 
+PerPacA                          0000 | PerPacB                          0001 
+PinHigh                          0001 | PinLow                           0002 
+PinToggle                        0003 | SetHigh                          0002 
+SetLow                           0004 | TRUE                             0001 
+any_trans                        0003 | bm_dt                            0007 
+bm_st                            0006 | chan                             0000 
+chan_base                        0000 | channel                          0000 
+detect_input_0_on_match          0004 | detect_input_1_on_match          0005 
+disable_output_buffer            0009 | do_nothing                       000F 
+em_b_dt                          0001 | em_b_st                          0000 
+em_nb_dt                         0003 | em_nb_st                         0002 
+enable_output_buffer             0008 | erta                             0000 
+ertb                             0000 | force_pin_high                   0002 
+force_pin_low                    0004 | high_low                         0002 
+link                             0000 | low_high                         0001 
+m2_dt                            0005 | m2_o_dt                          0009 
+m2_o_st                          0008 | m2_st                            0004 
+match_high                       0001 | match_low                        0002 
+match_no_change                  0000 | match_toggle                     0003 
+no_change_ipac                   0007 | no_detect                        0000 
+opac_high                        0001 | opac_high_low                    0004 
+opac_low                         0002 | opac_low_high                    0005 
+pin_high                         0002 | pin_low                          0004 
+pin_opacA                        0000 | pin_opacB                        0001 
+set_pin_per_opacA                0000 | set_pin_per_opacB                0001 
+sm_dt                            000D | sm_st                            000C 
+sm_st_e                          000E | tcr1                             0000 
+tcr2                             0000 | toggle                           0003 
+tpr                              0000 | tpr_struct                       0004 
+transition_high                  0005 | transition_low                   0004 
+transition_toggle                0006 | trr                              0000 
+
+
+ETPU "C" COMPILER 1.0.7.85                                              PAGE 23
+
+
+
+
+RAM USAGE MAP 
+
+0000     CC                               cc_reg              
+PRAM13   startTime                        signed int24        0200  02AF
+PRAM17   edgeTimes                        signed int24        0200  02AF
+PRAM21   updateFlag                       signed int24        0200  02AF
+
+
+RAM MEMORY DECLARATIONS
+
+RAM                                   [4001] @ 0000  0000 :: 4000 Used 0000 to 0000 (    0) 0000
+
+
+
+ROM USAGE MAP 
+
+    0000 to 003F    0200 to 02AF
+    Total ROM used 00F0 (240)
+
+
+eTPU FUNCTION SUMMARY 
+
+  0                            FreqIn  0200  02B0  (    44 words)  SRAM =   24  Local RAM =    0
+
+
+Errors             :    0
+Warnings           :    0
+
+
